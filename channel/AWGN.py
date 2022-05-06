@@ -42,7 +42,7 @@ class _AWGN():
         return const
     '''
 
-    def add_AWGN(self,constellation,No,beta):
+    def add_AWGN(self,constellation,No):
 
         # AWGN雑音の生成
         noise = np.random.normal(0, math.sqrt(No / 2), (len(constellation))) \

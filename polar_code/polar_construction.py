@@ -7,7 +7,7 @@ import multiprocessing
 import pickle
 
 class coding():
-  def __init__(self,N,K,design_SNR=0,channel=False,monte_carlo_const=False):
+  def __init__(self,N,K,design_SNR=0):
     '''
     polar_decode
     Lc: LLR fom channel
@@ -24,28 +24,22 @@ class coding():
     #settings
     self.adaptive_design_SNR=False #default:False
     self.systematic_polar=False #default:false
-    self.monte_carlo_const=monte_carlo_const
-    self.decoder_ver=2 #0:SC 1:SCL 2:CA SCL
+    self.decoder_ver=2 #0:SC 1:SCL 2:CA_SCL
 
     self.bit_reversal_sequence=self.reverse_bits()
 
     #for encoder (CRC poly)
     #1+x+x^2+....
     self.CRC_polynomial =np.array([1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1])
-    self.CRC_len=len(self.CRC_polynomial)
-    
-    #decide construction method
-    if self.monte_carlo_const==True:
-      self.K=N
-      self.frozen_bits,self.info_bits=np.arange(N),np.array([])
-      self.monte_carlo_const=monte_carlo_const
-      self.decoder_ver=0
       
-    elif monte_carlo_const==False:
-      self.const=monte_carlo()#Improved_GA()#monte_carlo() #Improved_GA()
+    self.const=Improved_GA()#monte_carlo() #Improved_GA()
       
       #flozen_bit selection 
-      self.frozen_bits,self.info_bits=self.const.main_const(self.N,self.K,self.design_SNR,channel)
+    if self.decoder_ver==2:
+      CRC_len=len(self.CRC_polynomial)-1
+      self.frozen_bits,self.info_bits=self.const.main_const(self.N,self.K+CRC_len,self.design_SNR)
+    else:
+      self.frozen_bits,self.info_bits=self.const.main_const(self.N,self.K,self.design_SNR)
     
     if self.systematic_polar==True:
       self.filename="systematic_"+self.filename
@@ -218,13 +212,20 @@ class Improved_GA():
 
     return gamma
 
-  def main_const(self,N,K,design_SNR,bit_reverse=True,channel=False):
+  def main_const(self,N,K,design_SNR,M=2):
+    # if bit_reverse or not
+    bit_reverse=True,
     #make n where 2**n=N
     n=np.log2(N).astype(int)
     
     gamma=np.zeros(N)
-     
-    gamma[0]=4*(10 ** (design_SNR / 10)) #mean of LLR when transmit all 0
+    
+    if M==2:
+      gamma[0]=4*(10 ** (design_SNR / 10)) #mean of LLR when transmit all 0
+    else:
+      dmin=(6/(M-1))**(1/2)
+      gamma[0]=4*(10 ** (design_SNR / 10))*dmin
+    
     for i in range(1,n+1):
       J=2**(i-1)
       for j in range(0,J):
@@ -744,6 +745,7 @@ class monte_carlo():
     epoch=10**3
     c=np.zeros(ec.N)
     for _ in range(epoch):
+          #main
       info,cwd=ec.polar_encode()
       Lc=-1*ch.generate_LLR(cwd,design_SNR)#デコーダが＋、ー逆になってしまうので-１をかける
       #rint(Lc)

@@ -340,6 +340,10 @@ class QAMModem(Modem):
         b = -2 * (np.array(self.m) % c) + c - 1
         a = 2 * np.floor(np.array(self.m) / c) - c + 1
         s = list((a + 1j * b))
+        
+        ave=np.average(np.abs(s)**2)
+        s/=ave**(1/2)
+        
         return s
 
     def __gray_qam_arange(self):
@@ -455,9 +459,65 @@ Blog
 About
 '''
 if __name__=='__main__':
-    M=16
+    
+    def add_AWGN(constellation,No):
+
+        # AWGN雑音の生成
+        noise = np.random.normal(0, math.sqrt(No / 2), (len(constellation))) \
+                + 1j * np.random.normal(0, math.sqrt(No / 2), (len(constellation)))
+
+        # AWGN通信路 = 送信シンボル間干渉が生じないような通信路で送信
+        RX_constellation = constellation + noise 
+
+        # 以下のprint関数の出力を表示すると、Noとほぼ一致するはず
+        #print(np.dot(noise[0, :], np.conj(noise[0, :]))/bit_num)
+
+        return RX_constellation
+    
+    
+    EsNodB=0
+    
+    M=64
     modem=QAMModem(M)
+    K=6*100
+    MAX_ERR=100
     
+    for EsNodB in range(0,30):
+        print(EsNodB)
+        EsNo = 10 ** (EsNodB / 10)
+        No=1/EsNo #Eb=1(fixed)
+        
+        
+        count_err=0
+        count_all=0
+        while count_err<MAX_ERR:
+            info=np.random.randint(0,2,K)
+            #information=np.zeros(K)
+            
+            #modulation and demodulation
+            TX_conste=modem.modulate(info)
+            RX_conste=add_AWGN(TX_conste,No)
+            Lc=modem.demodulate(RX_conste,(No/2)**(1/2))
+            
+            res=np.sign(Lc)
+            EST_info=(-1*res+1)//2
+            #print(EST_information)
+            #print(information)
+            #print(np.sum(information[::2]!=EST_information[::2]),np.sum(information[1::2]!=EST_information[1::2]))
+            
+            count_err+=np.sum(info!=EST_info)
+            #print(count_err)
+            count_all+=K
+
+        print(count_err/count_all)
     
-    modem.modulate()
+    '''
+    N=int(np.log2(M))*2**4
+    print(N)
+    info=np.random.randint(0,2,N)
+    TX_conste=modem.modulate(info)
+    RX_conste=add_AWGN(TX_conste,No)
+    Lc=modem.demodulate(RX_conste,(No/2)**(1/2))
+    print(Lc)
+    '''
     

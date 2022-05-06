@@ -10,7 +10,6 @@ class encoding():
     self.K=myPC.K
     self.decoder_var=myPC.decoder_ver
     self.systematic_polar=myPC.systematic_polar
-    self.monte_carlo_const=myPC.monte_carlo_const
     
     #functions
     self.CRC_gen=myPC.CRC_gen
@@ -114,16 +113,12 @@ class encoding():
     if self.systematic_polar==True:
       cwd=self.systematic_encode(info)
     
-    #for monte carlo construction encode
-    elif self.monte_carlo_const==True:
-      cwd=self.encode(info[self.bit_reversal_sequence])
-    
     else:
       u_message=self.generate_U(info)
       cwd=self.encode(u_message[self.bit_reversal_sequence])
-    
+      #bool型なので、int型に変更する
     #codeword=u_message@self.Gres%2
-    return info,cwd
+    return info,cwd.astype(np.int)
 
 if __name__=="__main__":
   

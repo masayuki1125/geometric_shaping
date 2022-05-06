@@ -10,8 +10,6 @@ class decoding():
     self.decoder_var=myPC.decoder_ver
 
     self.systematic_polar=myPC.systematic_polar
-    self.monte_carlo_const=myPC.monte_carlo_const
-    
     
     #specific constants
     self.list_size=4
@@ -99,19 +97,14 @@ class decoding():
 
       #leaf node operation
       if depth==self.itr_num:
+
+        #frozen_bit or not
+        if np.any(self.frozen_bits==length):
+          EST_codeword[depth,length]=0
         
-        #for monte carlo construction
-        if self.monte_carlo_const==True:
-          EST_codeword[depth,length]=info[length]
-                    
-        else:
-          #frozen_bit or not
-          if np.any(self.frozen_bits==length):
-            EST_codeword[depth,length]=0
-          
-          #info_bit operation
-          else :
-            EST_codeword[depth,length]=(-1*np.sign(llr[depth,length])+1)//2
+        #info_bit operation
+        else :
+          EST_codeword[depth,length]=(-1*np.sign(llr[depth,length])+1)//2
         
         length+=1 #go to next length
 
@@ -125,15 +118,10 @@ class decoding():
         if length==self.N:
           break
     
-    #for monte calro construction
-    if self.monte_carlo_const==False: 
-      res=EST_codeword[self.itr_num]
-    else:
-      
-      res=llr[self.itr_num]
-      #print(res)
-      #np.savetxt("llr",res)
-      #from IPython.core.debugger import Pdb; Pdb().set_trace()
+    res=llr[self.itr_num]
+    #print(res)
+    #np.savetxt("llr",res)
+    #from IPython.core.debugger import Pdb; Pdb().set_trace()
       
     if self.systematic_polar==True:
       #re encode polar
@@ -319,16 +307,11 @@ class decoding():
     0:simpified SC decoder
     1:simplified SCL decoder
     '''
-    #for monte_carlo construction
-    if self.monte_carlo_const==True:
-      res=self.SC_decoding(Lc,info)
+    if self.decoder_var==0:
+      EST_codeword=self.SC_decoding(Lc)
 
-    else:
-      if self.decoder_var==0:
-        EST_codeword=self.SC_decoding(Lc)
-
-      elif self.decoder_var==1 or self.decoder_var==2:
-        EST_codeword=self.SCL_decoding(Lc)
+    elif self.decoder_var==1 or self.decoder_var==2:
+      EST_codeword=self.SCL_decoding(Lc)
         
       res=EST_codeword[self.info_bits]
     return res

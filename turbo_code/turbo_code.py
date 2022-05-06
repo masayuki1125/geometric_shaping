@@ -13,8 +13,6 @@ from https://github.com/venkat0791/codec
 """
 import math
 import numpy as np
-from AWGN import _AWGN
-ch=_AWGN()
 
 
 # In[105]:
@@ -566,8 +564,8 @@ class turbo_code(encoding,decoding):
     
   def main_func(self,EbNodB): 
     information,codeword=self.turbo_encode()
-    Lc=-1*ch.generate_LLR(codeword,EbNodB)  ###LLR reverse
-    EST_information=self.turbo_decode(Lc) 
+    #Lc=-1*ch.generate_LLR(codeword,EbNodB)  ###LLR reverse
+    #EST_information=self.turbo_decode(Lc) 
 
     return information,EST_information
 

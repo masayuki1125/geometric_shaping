@@ -11,7 +11,6 @@ import multiprocessing
 import os
 import math
 
-
 # In[75]:
 
 
@@ -160,140 +159,14 @@ def SC_decoding(N,Lc,info):
   
   return res             
 
-
-# In[77]:
-
-
-#モンテカルロ法を用いるときに使用する関数
-def NOMA_mapping(beta,cwd1,cwd2):
-  #cwd=np.array([0,0,0,1,1,1,1,0])
-  const1=2*cwd1-1 #constellation for UE1
-  const2=2*cwd2-1 #constellation for UE2
-
-  #encode(p_all=1)
-  const=(1-beta)**(1/2)*const2+(beta)**(1/2)*const1*(-1*const2)
-  ## minus 00 -> 10 -> 11 -> 01 plus former_bit:UE1 latter_bit:UE2 
-  return const
-
-
 # In[78]:
-
 
 #モンテカルロ法を用いるときに使用する関数
 def add_AWGN(const,No):
   noise = np.random.normal(0, math.sqrt(No / 2), (len(const))) + 1j * np.random.normal(0, math.sqrt(No / 2), (len(const)))
   return const+noise
 
-
-# In[79]:
-
-
-#モンテカルロ法を用いるときに使用する関数
-def calc_exp(x,A,No):
-  #解が0にならないように計算する
-  res=np.zeros(len(x))
-  for i in range(len(x)):
-    if (x[i]-A)**2/No<30:
-      res[i]=np.exp(-1*(x[i]-A)**2/No)
-    else:
-      res[i]=10**(-15)
-  return res
-
-
-# In[80]:
-
-
-#モンテカルロ法を用いるときに使用する関数
-def calc_LLR(x,No,beta):
-  #4PAMのLLRを導出する関数
-  M=4 #１つのconstellationに対して、log2(4)=２bitの情報が入っている
-  
-  A1=calc_exp(x,-(1-beta)**(1/2)-(beta)**(1/2),No)
-  A2=calc_exp(x,-(1-beta)**(1/2)+(beta)**(1/2),No)
-  A3=calc_exp(x,(1-beta)**(1/2)-(beta)**(1/2),No)
-  A4=calc_exp(x,(1-beta)**(1/2)+(beta)**(1/2),No)
-  
-  Lc2=np.log((A3+A4)/(A1+A2)) #latter bit
-  Lc1=np.log((A2+A3)/(A1+A4)) #former bit
-  
-  #print(Lc)
-  #print(y2)
-  #print(y1)
-  return Lc1,Lc2
-
-
-# In[81]:
-
-
-#モンテカルロ法を用いるときに使用する関数
-def NOMA_decode(N,info1,info2,beta,const,design_SNR,User):
-  
-  #マッピングしたものを復号する
-  #design_SNRはUE1かUE2の受信dB
-  #for UE2
-  if User==2:
-    #p_all/No2=EsNodB2
-    EsNo2 = 10 ** (design_SNR / 10)
-    No2=1/EsNo2 #Es=1(fixed) #
-    
-    res_const=add_AWGN(const,No2)
-    res_const=res_const.real
-    _,Lc2=calc_LLR(res_const,No2,beta)
-    Lc2=-1*Lc2
-    llr2=SC_decoding(N,Lc2,info2)
-  
-    return info2,llr2
-
-  #for UE1
-  elif User==1:
-    #p_all/No1=EsNodB1
-    EsNo1 = 10 ** (design_SNR / 10)
-    No1=1/EsNo1 #Es=1
-    
-    #UE1 constellation
-    res_const=add_AWGN(const,No1)
-    res_const=res_const.real
-    #re_encode
-    bit_reversal_sequence=reverse_bits(N)
-    EST_cwd2=encode(info2[bit_reversal_sequence])
-    EST_const2=2*EST_cwd2-1
-
-    #subtract from res_const
-    UE1_const=-1*EST_const2*(res_const-(1-beta)**(1/2)*EST_const2) #ただ引き算をすれば良いわけではないことに注意！！
-    #print(const[::20])
-    #print(UE1_const[::20])
-    #make LLR
-    Lc1=-4*UE1_const*beta/No1 #Esがbeta倍になっているので、Noもその分大きくなる #-がつくかどうかわからないので、後で確認
-    #use decoder for UE1
-    llr1=SC_decoding(N,Lc1,info1)
-    
-    return info1,llr1
-  
-  else:
-    print("user error!")
-
-
-# In[82]:
-
-
-#モンテカルロ法によるLLRの推定
-def NOMA(N,beta,design_SNR,User=0):
-  #情報ビットと符号語を出力する
-  info1,cwd1=polar_encode(N)
-  info2,cwd2=polar_encode(N)
-  
-  #符号語をマッピングする
-  const=NOMA_mapping(beta,cwd1,cwd2)
-  
-  #マッピングした符号語を復号する
-  info,llr=NOMA_decode(N,info1,info2,beta,const,design_SNR,User)
-  
-  return info,llr
-
-
 # In[86]:
-
-
 class monte_carlo():
       
   def main_const(self,N,K,beta,design_SNR,User):
