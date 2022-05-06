@@ -174,12 +174,12 @@ class monte_carlo():
     #check
     #design_SNR=100
     #get from kwargs
-    if kwargs.get("BICM_int")!=None:#BICMする
-        BICM_int=kwargs.get("BICM_int")
-        const=Myconstruction(N,M,design_SNR,BICM_int)
     
-    else:#BICMしない
-        const=Myconstruction(N,M,design_SNR)
+    const=Myconstruction(N,M,design_SNR,**kwargs)
+    if const.BICM==True:
+        print("use BICM")
+    else:
+        print("don't use BICM")
     
     if N!=const.N:
         print("monte_carlo codelength error!!")
@@ -630,7 +630,8 @@ class QAMModem(Modem):
 
 class Myconstruction:
     def __init__(self,N,M,design_SNR,**kwargs):
-        if kwargs.get("BICM_int")!=None:
+        
+        if kwargs.get('BICM_int') is not None:
             self.BICM_int=kwargs.get("BICM_int")
             self.BICM=True
             self.BICM_deint=np.argsort(self.BICM_int)
@@ -641,7 +642,6 @@ class Myconstruction:
         self.M=M
         self.N=N
         self.design_SNR=design_SNR
-        self.BICM=False
             
         #modulation
         self.modem=QAMModem(self.M)
