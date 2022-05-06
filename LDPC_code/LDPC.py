@@ -517,10 +517,7 @@ class LDPC(encoding,decoding):
       #return information, EST_codeword[2*self.Zc:self.K+2*self.Zc]
       return information, EST_codeword[:self.K]
     
-
-
 # In[144]:
-
 
 if __name__=="__main__":
   #cd=coding(1024)

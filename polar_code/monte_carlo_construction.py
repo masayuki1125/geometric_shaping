@@ -255,11 +255,13 @@ class monte_carlo():
 
 # In[ ]:
 
+def main_func(N):
+      
+
+#%%
+
 
 if __name__=="__main__":
-  NOMA(1024,0.01,100,1)
-  NOMA(1024,0.2,100,2)
-
 
   #initial constant
   N=1024
@@ -267,7 +269,7 @@ if __name__=="__main__":
   epoch=10**1
   c=np.zeros(N)
   for _ in range(epoch):
-    info,llr=NOMA(N,beta,100,2)
+    info,llr=main_func(N,beta,100,2)
     
     d=np.zeros(len(llr))
       #print(llr)
