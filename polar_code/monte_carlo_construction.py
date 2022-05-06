@@ -170,10 +170,17 @@ def add_AWGN(const,No):
 # In[86]:
 class monte_carlo():
       
-  def main_const(self,N,K,design_SNR,M):
+  def main_const(self,N,K,design_SNR,M,**kwargs):
     #check
     #design_SNR=100
-    const=Myconstruction(N,M,design_SNR)
+    #get from kwargs
+    if kwargs.get("BICM_int")!=None:#BICMする
+        BICM_int=kwargs.get("BICM_int")
+        const=Myconstruction(N,M,design_SNR,BICM_int)
+    
+    else:#BICMしない
+        const=Myconstruction(N,M,design_SNR)
+    
     if N!=const.N:
         print("monte_carlo codelength error!!")
     
@@ -244,6 +251,9 @@ class monte_carlo():
     const=pickle.loads(dumped)
       
     filename="{}QAM_{}_{}".format(const.M,const.N,const.design_SNR)
+    
+    if const.BICM==True:
+        filename+="_BICM"
     
     #if file exists, then load txt file
     filename=dir_name+"/"+filename
@@ -619,10 +629,20 @@ class QAMModem(Modem):
         plt.show()
 
 class Myconstruction:
-    def __init__(self,N,M,design_SNR):
+    def __init__(self,N,M,design_SNR,**kwargs):
+        if kwargs.get("BICM_int")!=None:
+            self.BICM_int=kwargs.get("BICM_int")
+            self.BICM=True
+            self.BICM_deint=np.argsort(self.BICM_int)
+            self.BICM=True
+        else:
+            self.BICM=False
+        
         self.M=M
         self.N=N
         self.design_SNR=design_SNR
+        self.BICM=False
+            
         #modulation
         self.modem=QAMModem(self.M)
 
@@ -632,9 +652,13 @@ class Myconstruction:
         No=1/EsNo
         
         info,cwd=polar_encode(self.N)
+        if self.BICM==True:
+            cwd=cwd[self.BICM_int]
         TX_conste=self.modem.modulate(cwd)
         RX_conste=add_AWGN(TX_conste,No)
         Lc=self.modem.demodulate(RX_conste,No)
+        if self.BICM==True:
+            Lc=Lc[self.BICM_deint]
         llr=SC_decoding(self.N,Lc,info)
         
         return info,llr

@@ -42,11 +42,11 @@ class Mysystem:
             filename=dir_name+"/"+filename
             
             try:
-                self.BICM_int=np.loadtxt(filename)
+                self.BICM_int=np.loadtxt(filename,dtype='int')
             except FileNotFoundError:
                 self.BICM_int=self.srandom_interleave()
                 #export file
-                np.savetxt(filename,self.BICM_int)
+                np.savetxt(filename,self.BICM_int,fmt='%d')
             
             self.BICM_deint=np.argsort(self.BICM_int)
             
@@ -138,9 +138,9 @@ class Mysystem:
         const=monte_carlo_construction.monte_carlo()
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1    
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,self.BICM_int)
         else:
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M)
+            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M,self.BICM_int)
         
         EsNo = 10 ** (EsNodB / 10)
         No=1/EsNo
@@ -158,9 +158,9 @@ class Mysystem:
         return info,EST_info
 
 if __name__=='__main__':
-    K=256 #symbol数
+    K=128 #symbol数
     M=16
-    EsNodB=3
+    EsNodB=4
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
