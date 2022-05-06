@@ -3,6 +3,7 @@ import pickle
 import sys
 import numpy as np
 import math
+import os
 #my module
 from LDPC_code import LDPC_construction
 from LDPC_code import LDPC_encode
@@ -23,7 +24,30 @@ class Mysystem:
         self.BICM=True 
         
         if self.BICM==True:
-            self.BICM_int=self.srandom_interleave()
+            #make BICM directory
+            # directory make
+            current_directory="/home/kaneko/Dropbox/programming/geometric_shaping"
+            #current_directory=os.getcwd()
+            dir_name="BICM_interleaver"
+            dir_name=current_directory+"/"+dir_name
+            
+            try:
+                os.makedirs(dir_name)
+            except FileExistsError:
+                pass
+            
+            filename="length{}_mod{}".format(self.N,(self.M)**(1/2)//2)
+    
+            #if file exists, then load txt file
+            filename=dir_name+"/"+filename
+            
+            try:
+                self.BICM_int=np.loadtxt(filename)
+            except FileNotFoundError:
+                self.BICM_int=self.srandom_interleave()
+                #export file
+                np.savetxt(filename,self.BICM_int)
+            
             self.BICM_deint=np.argsort(self.BICM_int)
             
             #check
