@@ -114,9 +114,9 @@ class Mysystem:
         const=monte_carlo_construction.monte_carlo()
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1    
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.M,self.K+CRC_len,EsNodB)
+            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
         else:
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.M,self.K,EsNodB)
+            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M)
         
         EsNo = 10 ** (EsNodB / 10)
         No=1/EsNo

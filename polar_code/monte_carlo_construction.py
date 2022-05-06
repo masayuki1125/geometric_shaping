@@ -171,10 +171,9 @@ def add_AWGN(const,No):
 class monte_carlo():
       
   def main_const(self,N,K,design_SNR,M):
-    print("pass")
     #check
     #design_SNR=100
-    const=Myconstruction(M,K,design_SNR)
+    const=Myconstruction(N,M,design_SNR)
     if N!=const.N:
         print("monte_carlo codelength error!!")
     
@@ -232,7 +231,7 @@ class monte_carlo():
   def output(self,dumped):
     
     # directory make
-    current_directory="/home/kaneko/Dropbox/programming/wireless_communication/polar_code"
+    current_directory="/home/kaneko/Dropbox/programming/geometric_shaping/polar_code"
     #current_directory=os.getcwd()
     dir_name="monte_carlo_construction"
     dir_name=current_directory+"/"+dir_name
@@ -244,7 +243,7 @@ class monte_carlo():
     
     const=pickle.loads(dumped)
       
-    filename="{}QAM_{}_{}".format(const.M,const.K,const.design_SNR)
+    filename="{}QAM_{}_{}".format(const.M,const.N,const.design_SNR)
     
     #if file exists, then load txt file
     filename=dir_name+"/"+filename
@@ -620,10 +619,9 @@ class QAMModem(Modem):
         plt.show()
 
 class Myconstruction:
-    def __init__(self,M,K,design_SNR):
+    def __init__(self,N,M,design_SNR):
         self.M=M
-        self.K=K
-        self.N=self.K*int(np.log2(self.M))
+        self.N=N
         self.design_SNR=design_SNR
         #modulation
         self.modem=QAMModem(self.M)
@@ -648,8 +646,9 @@ if __name__=="__main__":
     #initial constant
     M=16
     K=128
+    N=int(np.log2(M))*K
     EsNodB=2
-    const=Myconstruction(M,K,EsNodB)
+    const=Myconstruction(N,M,EsNodB)
     N=const.N
     epoch=10**1
     c=np.zeros(const.N)
