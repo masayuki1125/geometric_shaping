@@ -105,13 +105,13 @@ class Modem:
 
     ''' DEMODULATION ALGORITHMS '''
 
-    def __ApproxLLR(self, x, noise_var):
+    def __ApproxLLR(self, x, No):
         """ Calculates approximate Log-likelihood Ratios (LLRs) [1].
         Parameters
         ----------
         x : 1-D ndarray of complex values
             Received complex-valued symbols to be demodulated.
-        noise_var: float
+        No: float
             Additive noise variance.
         Returns
         -------
@@ -139,7 +139,7 @@ class Modem:
             denum_post = np.amin(denum, axis=0, keepdims=True)
 
             llr = np.transpose(num_post[0]) - np.transpose(denum_post[0])
-            LLR.append(-llr / noise_var)
+            LLR.append(-llr / No)
 
         result = np.zeros((len(x) * len(zeros)))
         for i, llr in enumerate(LLR):
@@ -177,7 +177,7 @@ class Modem:
             modulated = [self.code_book[dec] for dec in msg]
         return np.array(modulated)
 
-    def demodulate(self, x, noise_var=1.):
+    def demodulate(self, x, No=1.):
         """ Demodulates complex symbols.
          Yes, MathWorks company provides several algorithms to demodulate
          BPSK, QPSK, 8-PSK and other M-PSK modulations in hard output manner:
@@ -192,7 +192,7 @@ class Modem:
         ----------
         x : 1-D ndarray of complex symbols
             Decimal or binary stream to be demodulated.
-        noise_var: float
+        No: float
             Additive noise variance.
         Returns
         -------
@@ -201,13 +201,13 @@ class Modem:
         """
 
         if self.soft_decision:
-            result = self.__ApproxLLR(x, noise_var)
+            result = self.__ApproxLLR(x, No)
         else:
             if self.bin_output:
-                llr = self.__ApproxLLR(x, noise_var)
+                llr = self.__ApproxLLR(x, No)
                 result = (np.sign(-llr) + 1) / 2  # NRZ-to-bin
             else:
-                llr = self.__ApproxLLR(x, noise_var)
+                llr = self.__ApproxLLR(x, No)
                 result = self.bin2de((np.sign(-llr) + 1) / 2)
         return result
 
