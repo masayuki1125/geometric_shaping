@@ -9,6 +9,7 @@ from LDPC_code import LDPC_encode
 from polar_code import polar_construction
 from polar_code import polar_encode
 from polar_code import polar_decode
+from polar_code import monte_carlo_construction
 from turbo_code import turbo_code
 from modulation import modulation
 from channel import AWGN
@@ -110,12 +111,12 @@ class Mysystem:
 
     def main_func(self,EsNodB):
         #adaptive dicision of frozen bits
-        const=polar_construction.Improved_GA()
+        const=monte_carlo_construction.monte_carlo()
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1    
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.M,self.K+CRC_len,EsNodB)
         else:
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M)
+            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.M,self.K,EsNodB)
         
         EsNo = 10 ** (EsNodB / 10)
         No=1/EsNo
