@@ -199,7 +199,7 @@ class monte_carlo():
     #initial constant
     const=pickle.loads(dumped)
     
-    epoch=10**3
+    epoch=10**4
     c=np.zeros(const.N)
     for _ in range(epoch):
       info,llr=const.main_func()
