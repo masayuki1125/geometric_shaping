@@ -60,7 +60,7 @@ class Mysystem:
             cwd=cwd[self.BICM_int]
         TX_conste=self.modem.modulate(cwd)
         RX_conste=self.ch.add_AWGN(TX_conste,No)
-        Lc=self.modem.demodulate(RX_conste,(No/2)**(1/2))
+        Lc=self.modem.demodulate(RX_conste,No)
         if self.BICM==True:
             Lc=Lc[self.BICM_deint]
         EST_info=self.dc.polar_decode(Lc)
@@ -70,7 +70,7 @@ class Mysystem:
 if __name__=='__main__':
     K=256 #symbol数
     M=4
-    EsNodB=-1
+    EsNodB=4
     system=Mysystem(M,K)
     print(system.N,system.K)
     info,EST_info=system.main_func(EsNodB)

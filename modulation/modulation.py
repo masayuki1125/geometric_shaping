@@ -104,6 +104,15 @@ class Modem:
         return zeros, ones
 
     ''' DEMODULATION ALGORITHMS '''
+    @staticmethod
+    def calc_exp(x,No):
+        #クリップする
+        res=np.exp(-1*np.array(x)/No)
+        res=np.sum(res,axis=0,keepdims=True)
+        res=np.clip(res,10**(-15),10**15)
+        res=np.log(res)
+        return res
+    
 
     def __ApproxLLR(self, x, No):
         """ Calculates approximate Log-likelihood Ratios (LLRs) [1].
@@ -113,8 +122,12 @@ class Modem:
             Received complex-valued symbols to be demodulated.
         No: float
             Additive noise variance.
+        (additional)
+        exact=False/True
+            using max/min approximation or not
         Returns
         -------
+        
         result: 1-D ndarray of floats
             Output LLRs.
         Reference:
@@ -123,23 +136,34 @@ class Modem:
                 IEEE Journal on Selected Areas in Communications,
                 vol. 16, No. 2, pp 260–264, Feb. 1998
         """
+        exact=True
 
         zeros = self.zeros
         ones = self.ones
+        
         LLR = []
-        for (zero_i, one_i) in zip(zeros, ones):
+        for (zero_i, one_i) in zip(zeros, ones): #iビット目のビットが0のときの信号点と1のときの信号点のリスト
             num = [((np.real(x) - np.real(z)) ** 2)
                    + ((np.imag(x) - np.imag(z)) ** 2)
                    for z in zero_i]
             denum = [((np.real(x) - np.real(o)) ** 2)
                      + ((np.imag(x) - np.imag(o)) ** 2)
                      for o in one_i]
+            
+            #print(len(zero_i))
 
-            num_post = np.amin(num, axis=0, keepdims=True)
-            denum_post = np.amin(denum, axis=0, keepdims=True)
+            if exact==False:
+                num_post = np.amin(num, axis=0, keepdims=True)
+                denum_post = np.amin(denum, axis=0, keepdims=True)
+                llr = np.transpose(num_post[0]) - np.transpose(denum_post[0]) #二次元配列になってしまっているので、1次元に直す
+                LLR.append(-llr / No)
+            elif exact==True:
+                num_post = self.calc_exp(num,No)
+                denum_post = self.calc_exp(denum,No)
+                llr = np.transpose(num_post[0]) - np.transpose(denum_post[0]) #二次元配列になってしまっているので、1次元に直す
+                LLR.append(llr)
 
-            llr = np.transpose(num_post[0]) - np.transpose(denum_post[0])
-            LLR.append(-llr / No)
+            
 
         result = np.zeros((len(x) * len(zeros)))
         for i, llr in enumerate(LLR):
@@ -497,7 +521,7 @@ if __name__=='__main__':
             #modulation and demodulation
             TX_conste=modem.modulate(info)
             RX_conste=add_AWGN(TX_conste,No)
-            Lc=modem.demodulate(RX_conste,(No/2)**(1/2))
+            Lc=modem.demodulate(RX_conste,No)
             
             res=np.sign(Lc)
             EST_info=(-1*res+1)//2
