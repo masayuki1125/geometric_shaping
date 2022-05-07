@@ -148,9 +148,10 @@ def SC_decoding(N,Lc,info):
             depth-=1 #back to depth
             before_process=3
             
+            #print(llr[itr_num,length-1])
+            #print(EST_codeword[itr_num,length-1])
             #from IPython.core.debugger import Pdb; Pdb().set_trace()
-            #print(llr)
-            #print(EST_codeword)
+            
         
         if length==N:
             break
@@ -671,7 +672,7 @@ class Myconstruction:
 if __name__=="__main__":
 
     #initial constant
-    M=16
+    M=256
     K=128
     N=int(np.log2(M))*K
     EsNodB=2

@@ -21,7 +21,7 @@ class Mysystem:
         self.K=K
         self.N=self.K*int(np.log2(self.M))
         
-        self.BICM=True 
+        self.BICM=False 
         
         if self.BICM==True:
             #make BICM directory
@@ -137,11 +137,16 @@ class Mysystem:
         #adaptive dicision of frozen bits
         const=monte_carlo_construction.monte_carlo()
         if self.cd.decoder_ver==2:
-            CRC_len=len(self.cd.CRC_polynomial)-1    
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
+            CRC_len=len(self.cd.CRC_polynomial)-1  
+            if self.BICM==True:  
+                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
+            else:
+                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
         else:
-            self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
-        
+            if self.BICM==True:  
+                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
+            else:
+                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M)
         EsNo = 10 ** (EsNodB / 10)
         No=1/EsNo
 
@@ -167,13 +172,10 @@ if __name__=='__main__':
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
     
-    '''
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
-            const.main_const(mysys.N,mysys.K,EsNodB,mysys.M,BICM_int=mysys.BICM_int)
-    '''
-    
+            const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
