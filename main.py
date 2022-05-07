@@ -160,7 +160,7 @@ class Mysystem:
 if __name__=='__main__':
     K=128 #symbol数
     M=256
-    EsNodB=
+    EsNodB=1
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
@@ -172,6 +172,7 @@ if __name__=='__main__':
     for M in M_list:
         for EsNodB in EsNodB_list:  
             mysys=Mysystem(M,K)  
+            mysys.BICM=False
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M,BICM_int=mysys.BICM_int)
     
