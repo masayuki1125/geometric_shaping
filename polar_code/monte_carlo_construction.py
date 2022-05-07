@@ -176,10 +176,11 @@ class monte_carlo():
     #get from kwargs
     
     const=Myconstruction(N,M,design_SNR,**kwargs)
-    if const.BICM==True:
-        print("use BICM")
-    else:
-        print("don't use BICM")
+    "comment if BICM or not"
+    #if const.BICM==True:
+    #    print("use BICM")
+    #else:
+    #    print("don't use BICM")
     
     if N!=const.N:
         print("monte_carlo codelength error!!")
@@ -261,6 +262,8 @@ class monte_carlo():
     try:
       c=np.loadtxt(filename)
     except FileNotFoundError:
+      print("make frozen bits!")
+      print(filename)
       c=self.make_c(dumped)
       #export file
       np.savetxt(filename,c)
