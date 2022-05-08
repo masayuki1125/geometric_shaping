@@ -21,7 +21,7 @@ class Mysystem:
         self.K=K
         self.N=self.K*int(np.log2(self.M))
         
-        self.BICM=False 
+        self.BICM=True 
         
         if self.BICM==True:
             #make BICM directory
@@ -164,14 +164,14 @@ class Mysystem:
 
 if __name__=='__main__':
     K=128 #symbol数
-    M=16
-    EsNodB=6.0
+    M=4
+    EsNodB=3.0
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
-    
+    '''
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
@@ -179,3 +179,4 @@ if __name__=='__main__':
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
+    '''

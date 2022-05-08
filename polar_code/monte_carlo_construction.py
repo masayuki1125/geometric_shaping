@@ -675,7 +675,7 @@ if __name__=="__main__":
     M=256
     K=128
     N=int(np.log2(M))*K
-    EsNodB=2
+    EsNodB=2.0
     const=Myconstruction(N,M,EsNodB)
     N=const.N
     epoch=10**1
