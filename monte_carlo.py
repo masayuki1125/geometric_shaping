@@ -50,8 +50,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=10
-        self.EbNodB_start=0
-        self.EbNodB_end=10
+        self.EbNodB_start=22
+        self.EbNodB_end=30
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -135,12 +135,12 @@ class MC():
 class savetxt():
   
   def __init__(self,M,K):
-    self.mysis=Mysystem(M,K)
+    self.mysys=Mysystem(M,K)
     self.mc=MC(K)
 
   def savetxt(self,BLER,BER):
 
-    with open(self.mysis.filename,'w') as f:
+    with open(self.mysys.filename,'w') as f:
 
         #print("#N="+str(self.mysis.cd.N),file=f)
         #print("#K="+str(self.mysis.cd.K),file=f)
@@ -151,7 +151,7 @@ class savetxt():
         #print("#RX_antenna="+str(self.mc.RX_antenna),file=f)
         #print("#modulation_symbol="+str(self.ch.M),file=f)
         #print("#MAX_BLERR="+str(self.mc.MAX_ERR),file=f)
-        #print("#iteration number="+str(self.cd.cd.max_iter),file=f)
+        print("#construction="+str(self.mysys.const),file=f)
         print("#EsNodB,BLER,BER",file=f)  
         for i in range(len(self.mc.EbNodB_range)):
             print(str(self.mc.EbNodB_range[i]),str(BLER[i]),str(BER[i]),file=f)
@@ -159,10 +159,10 @@ class savetxt():
 
 # In[ ]:
 if __name__=="__main__":
-    K=128
+    K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[4,16,256]
+    M_list=[256]
     result_ids_array=[]
     print(mc.EbNodB_range)
     for M in M_list:

@@ -19,8 +19,10 @@ class Mysystem:
     def __init__(self,M,K):
         self.M=M
         self.K=K
-        self.N=self.K*int(np.log2(self.M))
-        
+        #self.N=self.K*int(np.log2(self.M))
+        self.N=self.K*2
+        #self.const=monte_carlo_construction.monte_carlo()
+        self.const=polar_construction.Improved_GA()
         self.BICM=True 
         
         if self.BICM==True:
@@ -135,18 +137,27 @@ class Mysystem:
 
     def main_func(self,EsNodB):
         #adaptive dicision of frozen bits
-        const=monte_carlo_construction.monte_carlo()
+        
+        if self.cd.decoder_ver==2:
+            CRC_len=len(self.cd.CRC_polynomial)-1    
+            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+        else:
+            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
+        
+        '''
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1  
             if self.BICM==True:  
-                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
             else:
-                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
         else:
             if self.BICM==True:  
-                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
             else:
-                self.cd.frozen_bits,self.cd.info_bits=const.main_const(self.N,self.K,EsNodB,self.M)
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
+        '''#for monte carlo construction
+                
         EsNo = 10 ** (EsNodB / 10)
         No=1/EsNo
 
@@ -165,12 +176,13 @@ class Mysystem:
 if __name__=='__main__':
     K=128 #symbol数
     M=4
-    EsNodB=3.0
+    EsNodB=4.0
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
+    
     '''
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
