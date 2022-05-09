@@ -42,10 +42,10 @@ def make_AMI(EsNodB,M):
   
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=100000000
+    count_num=10000000
 
     #make info matrices
-    info=cp.random.randint(0,M-1,count_num)
+    info=cp.random.randint(0,M,count_num)
 
     #make constellation
     modem=QAMModem(M)
@@ -79,7 +79,7 @@ def make_AMI(EsNodB,M):
 def make_BMI(EsNodB,M):
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=100000000
+    count_num=10000000
 
     #make info matrices
     info=cp.random.randint(0,M,count_num)
@@ -154,7 +154,7 @@ def make_BMI(EsNodB,M):
 # In[104]:
 
 
-SNR_range=np.arange(0,10,0.1)
+SNR_range=np.arange(0,10,0.5)
 M_list=[4,16,256]
 #print(SNR_range)
 

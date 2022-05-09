@@ -468,6 +468,7 @@ class QAMModem(Modem):
         #plt.axis([-limits, limits, -limits, limits])
         plt.title(M + '-QAM, Mapping: ' + mapping + ', Input: ' + inputs)
         plt.show()
+        # plt.savefig()
 '''
 © 2022 GitHub, Inc.
 Terms
@@ -544,4 +545,5 @@ if __name__=='__main__':
     Lc=modem.demodulate(RX_conste,(No/2)**(1/2))
     print(Lc)
     '''
+    
     

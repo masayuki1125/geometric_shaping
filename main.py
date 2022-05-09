@@ -23,7 +23,7 @@ class Mysystem:
         self.N=self.K*2
         #self.const=monte_carlo_construction.monte_carlo()
         self.const=polar_construction.Improved_GA()
-        self.BICM=True 
+        self.BICM=False 
         
         if self.BICM==True:
             #make BICM directory
@@ -138,12 +138,13 @@ class Mysystem:
     def main_func(self,EsNodB):
         #adaptive dicision of frozen bits
         
-        if self.cd.decoder_ver==2:
-            CRC_len=len(self.cd.CRC_polynomial)-1    
-            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
-        else:
-            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
-        
+        if self.cd.design_SNR!=EsNodB:
+            if self.cd.decoder_ver==2:
+                CRC_len=len(self.cd.CRC_polynomial)-1    
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+            else:
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
+            print("pass")
         '''
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1  
@@ -174,9 +175,9 @@ class Mysystem:
         return info,EST_info
 
 if __name__=='__main__':
-    K=128 #symbol数
-    M=4
-    EsNodB=4.0
+    K=512 #symbol数
+    M=256
+    EsNodB=18.0
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
