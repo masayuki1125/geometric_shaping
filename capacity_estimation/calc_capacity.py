@@ -77,6 +77,8 @@ def make_AMI(EsNodB,M):
 
 
 def make_BMI(EsNodB,M):
+    each_res=True #default:false
+    
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
     count_num=10000000
@@ -113,7 +115,7 @@ def make_BMI(EsNodB,M):
     #print(info)
     #print(ones)
     H=0
-    res=0
+    res=np.zeros(int(math.log2(M)))
     for i in range(0,int(math.log2(M)))[::-1]:
         ith_bits=((info)//(2**i))%2
         #print("bits",ith_bits[0:30])
@@ -143,12 +145,17 @@ def make_BMI(EsNodB,M):
         H=cp.sum(cp.log2(num/den))
         tmp=1-H/count_num
         #print(tmp)
-        res+=tmp
+        res[i]+=tmp
 
     #H/=count_num
     #res=math.log2(M)-H
     #print(res)
-    return res
+    
+    if each_res==False:
+        return res
+    else:    
+        res=np.sum(res)
+        return res
 
 
 # In[104]:
