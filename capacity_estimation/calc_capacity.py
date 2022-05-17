@@ -159,33 +159,33 @@ def make_BMI(EsNodB,M):
 
 
 # In[104]:
+if __name__=='__main__':
 
+    SNR_range=np.arange(0,10,0.5)
+    M_list=[4,16,256]
+    #print(SNR_range)
 
-SNR_range=np.arange(0,10,0.5)
-M_list=[4,16,256]
-#print(SNR_range)
-
-BMI_list=np.zeros(len(SNR_range))
-
-for M in M_list:
-    AMI_list=np.zeros(len(SNR_range))
-    filename="AMI_{}QAM".format(M)
-    for i,EsNodB in enumerate(SNR_range):
-        AMI_list[i]=make_AMI(EsNodB,M)
-        
-        with open(filename,'w') as f:
-            for i in range(len(SNR_range)):
-                print(str(SNR_range[i]),str(AMI_list[i]),file=f)
-                
     BMI_list=np.zeros(len(SNR_range))
-    filename="BMI_{}QAM".format(M)
-    for i,EsNodB in enumerate(SNR_range):
-        BMI_list[i]=make_BMI(EsNodB,M)
+
+    for M in M_list:
+        AMI_list=np.zeros(len(SNR_range))
+        filename="AMI_{}QAM".format(M)
+        for i,EsNodB in enumerate(SNR_range):
+            AMI_list[i]=make_AMI(EsNodB,M)
+            
+            with open(filename,'w') as f:
+                for i in range(len(SNR_range)):
+                    print(str(SNR_range[i]),str(AMI_list[i]),file=f)
+                    
+        BMI_list=np.zeros(len(SNR_range))
+        filename="BMI_{}QAM".format(M)
+        for i,EsNodB in enumerate(SNR_range):
+            BMI_list[i]=make_BMI(EsNodB,M)
+            
+            with open(filename,'w') as f:
+                for i in range(len(SNR_range)):
+                    print(str(SNR_range[i]),str(BMI_list[i]),file=f)
+
+
         
-        with open(filename,'w') as f:
-            for i in range(len(SNR_range)):
-                print(str(SNR_range[i]),str(BMI_list[i]),file=f)
-
-
-    
 
