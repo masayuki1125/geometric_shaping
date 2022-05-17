@@ -151,7 +151,7 @@ def make_BMI(EsNodB,M):
     #res=math.log2(M)-H
     #print(res)
     
-    if each_res==False:
+    if each_res==True:
         return res
     else:    
         res=np.sum(res)
