@@ -672,10 +672,10 @@ class Myconstruction:
 if __name__=="__main__":
 
     #initial constant
-    M=256
-    K=128
+    M=4
+    K=8
     N=int(np.log2(M))*K
-    EsNodB=2.0
+    EsNodB=0
     const=Myconstruction(N,M,EsNodB)
     N=const.N
     epoch=10**1
@@ -685,6 +685,7 @@ if __name__=="__main__":
  
         d=np.zeros(len(llr))
         #print(llr)
+        #np.savetxt("llr",llr)
         #from IPython.core.debugger import Pdb; Pdb().set_trace()
         d[(2*info-1)*llr<0]=0
         d[(2*info-1)*llr>=0]=1

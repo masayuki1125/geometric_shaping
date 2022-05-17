@@ -124,10 +124,12 @@ if __name__=="__main__":
   
   from polar_construction import coding
   
-  N=1024
-  for k in range(N):
-    cd=coding(N,k)
-    cd.systematic_polar=True
-    ec=encoding(cd)
-    ec.polar_encode()
-    print(k)
+  N=4
+  #for k in range(N):
+  cd=coding(N,N)
+  cd.systematic_polar=False
+  ec=encoding(cd)
+  info,cwd=ec.polar_encode()
+  print(info,cwd)
+    
+    
