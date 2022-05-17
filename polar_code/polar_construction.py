@@ -90,7 +90,8 @@ class coding():
     tmp=tmp.zfill(int(math.log2(self.N))+1)[:0:-1]
     res=int(tmp,2) 
     return res
- 
+
+
  
 class Improved_GA():
     
