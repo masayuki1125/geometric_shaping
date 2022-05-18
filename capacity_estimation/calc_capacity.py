@@ -85,7 +85,7 @@ def make_BMI(EsNodB,M):
     all_count=1000000000
     
     if each_res==True:
-        result=np.zeros(np.zeros(int(math.log2(M))))
+        result=np.zeros(int(math.log2(M)))
     else:    
         result=0
     
