@@ -83,6 +83,12 @@ def make_BMI(EsNodB,M):
         
     result=0
     all_count=1000000000
+    
+    if each_res==True:
+        result=np.zeros(np.zeros(int(math.log2(M))))
+    else:    
+        result=0
+    
     for _ in range(all_count//count_num):
         #make info matrices
         info=cp.random.randint(0,M,count_num)
@@ -154,7 +160,7 @@ def make_BMI(EsNodB,M):
         #print(res)
         
         if each_res==True:
-            return res[::-1]
+            res=res[::-1]
         else:    
             res=np.sum(res)
         
