@@ -82,6 +82,8 @@ def make_BMI(EsNodB,M):
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
     count_num=10000000
+    if M>=256:
+        count_num//=10#変調多値数が大きくなると、計算が重くなるため、カウント回数を減らす
 
     #make info matrices
     info=cp.random.randint(0,M,count_num)
@@ -90,6 +92,7 @@ def make_BMI(EsNodB,M):
     #make constellation
     modem=QAMModem(M)
     tmp=modem.code_book
+    #print(modem.code_book)
     symbol=cp.zeros(M,dtype=complex)
     for i in tmp:
         symbol[modem.bin2de(i)]=tmp[i]
@@ -152,7 +155,7 @@ def make_BMI(EsNodB,M):
     #print(res)
     
     if each_res==True:
-        return res
+        return res[::-1]
     else:    
         res=np.sum(res)
         return res

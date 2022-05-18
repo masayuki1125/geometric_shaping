@@ -299,7 +299,7 @@ class decoding():
     
     return res[res_list_num]
 
-  def polar_decode(self,Lc,info=False):
+  def polar_decode(self,Lc):
     '''
     polar_decode
     Lc: LLR fom channel
@@ -313,7 +313,7 @@ class decoding():
     elif self.decoder_var==1 or self.decoder_var==2:
       EST_codeword=self.SCL_decoding(Lc)
         
-      res=EST_codeword[self.info_bits]
+    res=EST_codeword[self.info_bits]
     return res
   
 if __name__=="__main__":

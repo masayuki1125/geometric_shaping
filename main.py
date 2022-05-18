@@ -10,6 +10,7 @@ from LDPC_code import LDPC_encode
 from polar_code import polar_construction
 from polar_code import polar_encode
 from polar_code import polar_decode
+from polar_code import RCA
 from polar_code import monte_carlo_construction
 from turbo_code import turbo_construction
 from turbo_code import turbo_encode
@@ -25,8 +26,8 @@ class Mysystem:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         #self.const=monte_carlo_construction.monte_carlo()
-        self.const=polar_construction.Improved_GA()
-        self.BICM=True 
+        self.const=RCA.RCA()
+        self.BICM=False 
         
         if self.BICM==True:
             #make BICM directory
@@ -144,10 +145,24 @@ class Mysystem:
         if self.cd.design_SNR!=EsNodB:
             if self.cd.decoder_ver==2:
                 CRC_len=len(self.cd.CRC_polynomial)-1    
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB)
+            else:
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB)
+            self.cd.design_SNR==EsNodB
+            #for RCA construction
+        
+        
+        '''
+        if self.cd.design_SNR!=EsNodB:
+            if self.cd.decoder_ver==2:
+                CRC_len=len(self.cd.CRC_polynomial)-1    
                 self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
             else:
                 self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
-            print("pass")
+                
+            self.cd.design_SNR==EsNodB
+        '''    #for iGA construction
+        
         '''
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1  
@@ -176,7 +191,7 @@ class Mysystem:
         EST_info=self.dc.polar_decode(Lc)
         
         return info,EST_info
-    
+'''    
 class Mysystem():
     def __init__(self,M,K):
         self.M=M
@@ -263,11 +278,11 @@ class Mysystem():
                     # confirm valid or not
                     for k in range(1,s+1):
                         if i-k>=0 and (abs(heap[i-k]-vector[j])+abs(i-k-j))<=s or (vector[j]%mod)!=(i%mod):
-                            '''
-                            i-k>=0 : for the part i<s 
-                            (abs(heap[i-k]-vector[j]))<=s : srandom interleaver
-                            vector[j]//mod!=i//mod : mod M interleaver(such as odd-even)
-                            '''
+    
+                            #i-k>=0 : for the part i<s 
+                            #(abs(heap[i-k]-vector[j]))<=s : srandom interleaver
+                            #vector[j]//mod!=i//mod : mod M interleaver(such as odd-even)
+    
                             #vector[j] is invalid and next vector[j+1]
                             break
 
@@ -311,10 +326,11 @@ class Mysystem():
         EST_info=self.dc.turbo_decode(Lc)
         
         return info,EST_info
+'''
 
 if __name__=='__main__':
     K=512 #symbol数
-    M=256
+    M=4
     EsNodB=10.0
     system=Mysystem(M,K)
     print("\n")
@@ -322,12 +338,14 @@ if __name__=='__main__':
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
     
-    '''
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
+            if M==16:
+                EsNodB+=5
+            elif M==256:
+                EsNodB+=10
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
-    '''
