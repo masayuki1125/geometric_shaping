@@ -82,7 +82,7 @@ def make_BMI(EsNodB,M):
         count_num//=10#変調多値数が大きくなると、計算が重くなるため、カウント回数を減らす
         
     result=0
-    all_count=1000000000
+    all_count=10**10
     
     if each_res==True:
         result=np.zeros(int(math.log2(M)))
