@@ -25,9 +25,9 @@ class Mysystem:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        #self.const=monte_carlo_construction.monte_carlo()
+        self.const=monte_carlo_construction.monte_carlo()
         #self.const=polar_construction.Improved_GA()
-        self.const=RCA.RCA()
+        #self.const=RCA.RCA()
         self.BICM=False 
         
         if self.BICM==True:
@@ -146,11 +146,11 @@ class Mysystem:
         if self.cd.design_SNR!=EsNodB:
             if self.cd.decoder_ver==2:
                 CRC_len=len(self.cd.CRC_polynomial)-1    
-                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB)
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
             else:
-                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB)
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
             self.cd.design_SNR==EsNodB
-            #for RCA construction
+            #for RCA and iGA and monte_carlo construction
         
         
         '''
