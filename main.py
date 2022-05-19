@@ -26,6 +26,7 @@ class Mysystem:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         #self.const=monte_carlo_construction.monte_carlo()
+        #self.const=polar_construction.Improved_GA()
         self.const=RCA.RCA()
         self.BICM=False 
         
@@ -74,7 +75,7 @@ class Mysystem:
         self.ch=AWGN._AWGN()
         
         #filename
-        self.filename="polar_code_{}_{}_{}_exactLLR".format(self.N,self.K,self.M)
+        self.filename="polar_code_{}_{}_{}_RCA".format(self.N,self.K,self.M)
         if self.BICM==True:
             self.filename=self.filename+"_BICM"
             
@@ -330,14 +331,15 @@ class Mysystem():
 
 if __name__=='__main__':
     K=512 #symbol数
-    M=4
-    EsNodB=10.0
+    M=16
+    EsNodB=15.0
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
     
+
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
@@ -345,7 +347,7 @@ if __name__=='__main__':
             if M==16:
                 EsNodB+=5
             elif M==256:
-                EsNodB+=10
+                EsNodB+=15
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    

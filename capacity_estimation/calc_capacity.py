@@ -198,7 +198,7 @@ def make_BMI_list(EsNodB,M):
 
 # In[104]:
 if __name__=='__main__':
-    SNR_range=np.arange(0,5,0.5)
+    SNR_range=np.arange(15,20,0.5)
     M_list=[16,256]
     
     BMI_list=np.zeros(len(SNR_range))
