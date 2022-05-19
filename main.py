@@ -75,7 +75,7 @@ class Mysystem:
         self.ch=AWGN._AWGN()
         
         #filename
-        self.filename="polar_code_{}_{}_{}_RCA".format(self.N,self.K,self.M)
+        self.filename="polar_code_{}_{}_{}".format(self.N,self.K,self.M)
         if self.BICM==True:
             self.filename=self.filename+"_BICM"
             
