@@ -25,7 +25,7 @@ class Mysystem:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        #self.const=monte_carlo_construction.monte_carlo()
+        self.const=monte_carlo_construction.monte_carlo()
         #self.const=polar_construction.Improved_GA()
         #self.const=RCA.RCA()
         self.BICM=False 
@@ -75,7 +75,7 @@ class Mysystem:
         self.ch=AWGN._AWGN()
         
         #filename
-        self.filename="polar_code_{}_{}_{}_exactLLR".format(self.N,self.K,self.M)
+        self.filename="polar_code_{}_{}_{}".format(self.N,self.K,self.M)
         if self.BICM==True:
             self.filename=self.filename+"_BICM"
             
@@ -149,9 +149,20 @@ class Mysystem:
                 self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
             else:
                 self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
+            self.cd.design_SNR==EsNodB
+            #for RCA and iGA and monte_carlo construction
+        
+        
+        '''
+        if self.cd.design_SNR!=EsNodB:
+            if self.cd.decoder_ver==2:
+                CRC_len=len(self.cd.CRC_polynomial)-1    
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+            else:
+                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
                 
             self.cd.design_SNR==EsNodB
-            #for iGA and RCA and monte_carlo construction
+        '''    #for iGA construction
         
         '''
         if self.cd.decoder_ver==2:
@@ -319,25 +330,26 @@ class Mysystem():
 '''
 
 if __name__=='__main__':
-    K=512 #symbol数
-    M=4
+    K=4096 #symbol数
     print("aiueo")
-    EsNodB=1.0
+    '''
+    M=256
+    EsNodB=19.0
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
     '''
+    
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
             if M==16:
-                EsNodB+=5
-            elif M==256:
                 EsNodB+=10
+            elif M==256:
+                EsNodB+=20
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
-    '''

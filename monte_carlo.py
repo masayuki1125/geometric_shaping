@@ -139,7 +139,6 @@ class savetxt():
     self.mc=MC(K)
 
   def savetxt(self,BLER,BER):
-
     with open(self.mysys.filename,'w') as f:
 
         #print("#N="+str(self.mysis.cd.N),file=f)
@@ -156,11 +155,11 @@ class savetxt():
         for i in range(len(self.mc.EbNodB_range)):
             print(str(self.mc.EbNodB_range[i]),str(BLER[i]),str(BER[i]),file=f)
 
-
 # In[ ]:
 if __name__=="__main__":
     K=512
     print("K=",K)
+    print("aiueo")
     mc=MC(K)
     M_list=[256]
     result_ids_array=[]
