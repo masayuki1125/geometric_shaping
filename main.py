@@ -330,7 +330,8 @@ class Mysystem():
 '''
 
 if __name__=='__main__':
-    K=512 #symbol数
+    K=4096 #symbol数
+    '''
     M=256
     EsNodB=19.0
     system=Mysystem(M,K)
@@ -338,17 +339,16 @@ if __name__=='__main__':
     print(system.N,system.K)
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
-    
     '''
+    
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
             if M==16:
-                EsNodB+=5
+                EsNodB+=10
             elif M==256:
-                EsNodB+=15
+                EsNodB+=20
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
-    '''
