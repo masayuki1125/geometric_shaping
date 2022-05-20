@@ -5,7 +5,7 @@
 
 
 import os
-from AWGN import _AWGN
+#from AWGN import _AWGN
 import numpy as np
 import scipy
 from scipy import sparse
@@ -23,7 +23,7 @@ class coding():
 
     self.encoder_var=0 #0:regular_LDPC 1:NR_LDPC(quasi cyclic)
 
-    self.ch=_AWGN() #difine channel
+    #self.ch=_AWGN() #difine channel
     
     self.N=N
     self.R=1/2
@@ -38,8 +38,10 @@ class coding():
       if (self.Wr-self.Wc)/self.Wr!=self.R:
         print("encoder rate error")
 
-      self.H=self.generate_regular_H()  
+      self.H=self.generate_regular_H() 
+      print(np.sum(self.H,axis=0) )
       self.tG=self.HtotG()
+      print(self.tG.shape)
       print(self.H.shape)    
       self.filename="regular_LDPC_code_{}_{}".format(self.N,self.K)
     
@@ -521,7 +523,7 @@ class LDPC(encoding,decoding):
 
 if __name__=="__main__":
   #cd=coding(1024)
-  ldpc=LDPC(2048)
+  ldpc=LDPC(1024)
   main_func=ldpc.main_func
   EbNodB=0
 
