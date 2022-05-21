@@ -202,6 +202,7 @@ elif FEC==3:
 if __name__=='__main__':
     K=512 #symbol数
     M=256
+    '''
     EsNodB=20.0
     print(EsNodB)
     system=Mysystem(M,K)
@@ -210,6 +211,8 @@ if __name__=='__main__':
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
     '''
+    
+    K=4096
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
@@ -221,4 +224,4 @@ if __name__=='__main__':
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
-    '''
+    

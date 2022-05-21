@@ -201,7 +201,11 @@ class monte_carlo():
     #initial constant
     const=pickle.loads(dumped)
     
-    epoch=10**4
+    if const.N<=2048:
+        epoch=10**4
+    else:
+        epoch=10**3
+    
     c=np.zeros(const.N)
     for _ in range(epoch):
       info,llr=const.main_func()

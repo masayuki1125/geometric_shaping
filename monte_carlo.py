@@ -118,7 +118,7 @@ class MC():
 
                 print("\r"+"EbNodB="+str(EbNodB)+",BLER="+str(BLER[j])+",BER="+str(BER[j]),end="")
                 
-                if count_err/count_all<10**-5:
+                if count_biterr/count_bitall<10**-5:
                     print("finish")
                     break
             
