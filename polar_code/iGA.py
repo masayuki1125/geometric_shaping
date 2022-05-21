@@ -146,7 +146,7 @@ class Improved_GA(Improved_GA):
 # In[7]:
 
 class Improved_GA(Improved_GA):
-  def main_const(self,N,K,design_SNR,M):
+  def main_const(self,N,K,design_SNR,M=2):
     bit_reverse=True
         #make n where 2**n=N
     n=np.log2(N).astype(int)
