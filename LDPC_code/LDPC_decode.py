@@ -4,8 +4,6 @@ from scipy import sparse
 import numpy as np
 import math
 
-from sympy import LC 
-
 class decoding():
     def __init__(self,cd):
         self.N=cd.N
@@ -139,7 +137,7 @@ if __name__=="__main__":
     Lc=modem.demodulate(RX_const,No)
 
     print(Lc)
-    EST_cwd,*EX_info=dc.LDPC_decode(Lc)
+    EST_cwd,EX_info=dc.LDPC_decode(Lc)
     print(EST_cwd)
     print(EX_info)
     print(np.sum(cwd!=EST_cwd))

@@ -542,7 +542,7 @@ if __name__=='__main__':
         print(count_err/count_all)
     '''
     
-    N=int(np.log2(M))*2**4
+    N=256
     print(N)
     info=np.random.randint(0,2,N)
     TX_conste=modem.modulate(info)

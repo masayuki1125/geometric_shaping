@@ -24,7 +24,7 @@ class coding():
     #settings
     self.adaptive_design_SNR=False #default:False
     self.systematic_polar=False #default:false
-    self.decoder_ver=2 #0:SC 1:SCL 2:CA_SCL
+    self.decoder_ver=0 #0:SC 1:SCL 2:CA_SCL
 
     self.bit_reversal_sequence=self.reverse_bits()
 
@@ -222,7 +222,10 @@ class Improved_GA():
     if M==2:
       gamma[0]=4*(10 ** (design_SNR / 10)) #mean of LLR when transmit all 0
     else:
+      #print(M)
       dmin=(6/(M-1))**(1/2)
+      #dmin=1
+      #print(dmin/2)
       gamma[0]=4*(10 ** (design_SNR / 10))*(dmin/2)
     
     for i in range(1,n+1):

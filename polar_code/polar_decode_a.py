@@ -1,30 +1,11 @@
+
 import numpy as np
-import math
+import math 
 
 class decoding():
-  
-  def __init__(self,myPC,myPC_ec):
-    #successeeded constants
-    self.N=myPC.N
-    self.K=myPC.K
-    self.decoder_var=myPC.decoder_ver
-
-    self.systematic_polar=myPC.systematic_polar
-    #print(self.systematic_polar)
     
-    #specific constants
-    self.list_size=4
-    self.itr_num=int(math.log2(self.N))
-    
-    #functions
-    self.CRC_gen=myPC.CRC_gen
-    self.CRC_polynomial=myPC.CRC_polynomial
-    self.info_bits=myPC.info_bits
-    self.frozen_bits=myPC.frozen_bits
-    self.bit_reversal_sequence=myPC.bit_reversal_sequence
-    
-    self.generate_U=myPC_ec.generate_U
-    self.encode=myPC_ec.encode
+  def __init__(self):
+      self.N
     
   @staticmethod
   def chk(llr_1,llr_2):
@@ -43,6 +24,11 @@ class decoding():
         res[i]= 2 * np.arctanh(np.tanh(llr_1[i] / 2, ) * np.tanh(llr_2[i] / 2))
     return res
 
+
+# In[11]:
+
+
+class decoding(decoding):
   def SC_decoding(self,Lc):
     #initialize constant    
     llr=np.zeros((self.itr_num+1,self.N))
@@ -98,7 +84,7 @@ class decoding():
 
       #leaf node operation
       if depth==self.itr_num:
-
+        
         #frozen_bit or not
         if np.any(self.frozen_bits==length):
           EST_codeword[depth,length]=0
@@ -119,10 +105,12 @@ class decoding():
         if length==self.N:
           break
     
-    res=EST_codeword[self.itr_num]
-    #print(res)
-    #np.savetxt("llr",res)
-    #from IPython.core.debugger import Pdb; Pdb().set_trace()
+    if self.K!=0: 
+      res=EST_codeword[self.itr_num]
+    else:
+      res=llr[self.itr_num]
+      #np.savetxt("llr",res)
+      #from IPython.core.debugger import Pdb; Pdb().set_trace()
       
     if self.systematic_polar==True:
       #re encode polar
@@ -130,6 +118,12 @@ class decoding():
       res=self.encode(u_message[self.bit_reversal_sequence])
     
     return res
+
+
+# In[12]:
+
+
+class decoding(decoding):
   
   @staticmethod
   def calc_BM(u_tilde,llr):
@@ -139,7 +133,7 @@ class decoding():
       return math.log(1+math.exp(u_tilde*llr))
 
   def SCL_decoding(self,Lc):
-    
+
     #initialize constant    
     llr=np.zeros((self.list_size,self.itr_num+1,self.N))
     EST_codeword=np.zeros((self.list_size,self.itr_num+1,self.N))
@@ -289,38 +283,15 @@ class decoding():
       for i in range(self.list_size):
         EST_CRC_info=res[i][self.info_bits]
         _,check=self.CRC_gen(EST_CRC_info,self.CRC_polynomial)
-        print(check)
+        #print(check)
         if check==True:
           res_list_num=i
           break
       
-      #else:
-        #print("no codeword")
+      else:
+        print("no codeword")
     #print("CRC_err")
 
     #print("\r",PML,end="")
     
     return res[res_list_num]
-
-  def polar_decode(self,Lc):
-    '''
-    polar_decode
-    Lc: LLR fom channel
-    decoder_var:int [0,1] (default:0)
-    0:simpified SC decoder
-    1:simplified SCL decoder
-    '''
-    if self.decoder_var==0:
-      EST_codeword=self.SC_decoding(Lc)
-
-    elif self.decoder_var==1 or self.decoder_var==2:
-      EST_codeword=self.SCL_decoding(Lc)
-        
-    res=EST_codeword[self.info_bits]
-    return res
-  
-if __name__=="__main__":
-  from polar_construction import coding
-  from polar_decode import decoding
-  
-  

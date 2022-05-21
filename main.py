@@ -20,7 +20,7 @@ from modulation import modulation
 from modulation.BICM import make_BICM
 from channel import AWGN
 
-FEC=3 #1:polar code 2:turbo code 3:LDPC code
+FEC=1 #1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):
@@ -30,7 +30,7 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         self.BICM=False 
-        const_var=3
+        const_var=2
         
         #for construction
         if const_var==1:
@@ -69,15 +69,15 @@ class Mysystem_Polar:
         #adaptive dicision of frozen bits
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1  
-            if self.BICM==True:  
-                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
-            else:
-                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+            #if self.BICM==True:  
+                #self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
+            #else:
+            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
         else:
-            if self.BICM==True:  
-                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
-            else:
-                self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
+            #if self.BICM==True:  
+                #self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
+            #else:
+            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
                 
             self.cd.design_SNR==EsNodB
             
@@ -96,6 +96,9 @@ class Mysystem_Polar:
             Lc=Lc[self.BICM_deint]
         EST_info=self.dc.polar_decode(Lc)
         
+        #print(EST_info)
+        #print(info)
+        
         return info,EST_info
   
 class Mysystem_Turbo():
@@ -104,7 +107,7 @@ class Mysystem_Turbo():
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=True 
+        self.BICM=False 
         
         #coding
         self.cd=turbo_construction.coding(self.N,self.K)
@@ -148,7 +151,7 @@ class Mysystem_LDPC():
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=True 
+        self.BICM=False 
                 
         #coding
         self.cd=LDPC_construction.coding(self.N,self.K)
@@ -183,7 +186,7 @@ class Mysystem_LDPC():
         Lc=self.modem.demodulate(RX_conste,No)
         if self.BICM==True:
             Lc=Lc[self.BICM_deint]
-        EST_cwd=self.dc.LDPC_decode(Lc)
+        EST_cwd,EX_info=self.dc.LDPC_decode(Lc)
         return info,EST_cwd
 
 if FEC==1:
@@ -201,17 +204,18 @@ elif FEC==3:
 
 if __name__=='__main__':
     K=512 #symbol数
-    M=256
-    '''
-    EsNodB=20.0
-    print(EsNodB)
+    M=4
+    
+    EsNodB=2.0
+    print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
     info,EST_info=system.main_func(EsNodB)
     print(np.sum(info!=EST_info))
-    '''
     
+    
+    '''
     K=4096
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
@@ -224,4 +228,4 @@ if __name__=='__main__':
             mysys=Mysystem(M,K)  
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
-    
+    '''
