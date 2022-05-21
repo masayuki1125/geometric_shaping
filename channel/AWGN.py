@@ -46,7 +46,7 @@ class _AWGN():
 
         # AWGN雑音の生成
         noise = np.random.normal(0, math.sqrt(No / 2), (len(constellation))) \
-                #+ 1j * np.random.normal(0, math.sqrt(No / 2), (len(constellation)))
+                + 1j * np.random.normal(0, math.sqrt(No / 2), (len(constellation)))
 
         # AWGN通信路 = 送信シンボル間干渉が生じないような通信路で送信
         RX_constellation = constellation + noise 

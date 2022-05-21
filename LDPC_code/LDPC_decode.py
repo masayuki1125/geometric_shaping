@@ -93,8 +93,8 @@ class decoding():
             L_mat=tmp-L_mat
 
             ##check operation
-            EST_Lc=L_mat.sum(axis=0)
-            EST_Lc+=Lc
+            EX_info=L_mat.sum(axis=0)
+            EST_Lc=Lc+EX_info
             EST_codeword=(np.sign(EST_Lc)+1)/2
 
             #convert from matrix class to array class
@@ -103,15 +103,15 @@ class decoding():
                 break
             k+=1
         
-        return EST_codeword
+        return EST_codeword ,EX_info
 
     def LDPC_decode(self,Lc):
         #Lcをプラスとマイナス逆にする
         Lc=-1*Lc
         
-        EST_codeword=self.sum_product(Lc)
+        EST_codeword ,*EX_info=self.sum_product(Lc)
         #EST_information=EST_codeword[(self.N-self.K):] #systematicじゃないので、情報ビットだけで測れない
-        return EST_codeword
+        return EST_codeword ,np.asarray(EX_info).flatten()
 
     
 if __name__=="__main__":
@@ -124,7 +124,7 @@ if __name__=="__main__":
     from modulation.modulation import QAMModem
     N=1024
     K=512
-    EsNodB=0
+    EsNodB=3
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
     cd=coding(N,K)
@@ -136,11 +136,11 @@ if __name__=="__main__":
     info,cwd=ec.LDPC_encode()
     TX_const=modem.modulate(cwd)
     RX_const=ch.add_AWGN(TX_const,No)
-    Lc=-1*modem.demodulate(RX_const,No)
+    Lc=modem.demodulate(RX_const,No)
 
-    #print(Lc)
-    EST_cwd=dc.LDPC_decode(Lc)
+    print(Lc)
+    EST_cwd,*EX_info=dc.LDPC_decode(Lc)
     print(EST_cwd)
+    print(EX_info)
     print(np.sum(cwd!=EST_cwd))
-    
     

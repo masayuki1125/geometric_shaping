@@ -160,6 +160,10 @@ class Modem:
             elif exact==True:
                 num_post = self.calc_exp(num,No)
                 denum_post = self.calc_exp(denum,No)
+                #print(num_post[0])
+                #print(denum_post[0])
+                #from IPython.core.debugger import Pdb; Pdb().set_trace()
+                
                 llr = np.transpose(num_post[0]) - np.transpose(denum_post[0]) #二次元配列になってしまっているので、1次元に直す
                 LLR.append(llr)
 
@@ -500,13 +504,14 @@ if __name__=='__main__':
         return RX_constellation
     
     
-    EsNodB=0
-    
-    M=64
+    EsNodB=1
+    EsNo = 10 ** (EsNodB / 10)
+    No=1/EsNo 
+    M=4
     modem=QAMModem(M)
     K=6*100
     MAX_ERR=100
-    
+    '''
     for EsNodB in range(0,30):
         print(EsNodB)
         EsNo = 10 ** (EsNodB / 10)
@@ -535,15 +540,16 @@ if __name__=='__main__':
             count_all+=K
 
         print(count_err/count_all)
-    
     '''
+    
     N=int(np.log2(M))*2**4
     print(N)
     info=np.random.randint(0,2,N)
     TX_conste=modem.modulate(info)
     RX_conste=add_AWGN(TX_conste,No)
-    Lc=modem.demodulate(RX_conste,(No/2)**(1/2))
+    Lc=modem.demodulate(RX_conste,No)
+    print(info)
     print(Lc)
-    '''
+    
     
     
