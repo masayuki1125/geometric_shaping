@@ -12,6 +12,7 @@ from polar_code import polar_construction
 from polar_code import polar_encode
 from polar_code import polar_decode
 from polar_code import RCA
+from polar_code import iGA
 from polar_code import monte_carlo_construction
 from turbo_code import turbo_construction
 from turbo_code import turbo_encode
@@ -37,7 +38,7 @@ class Mysystem_Polar:
             self.const=monte_carlo_construction.monte_carlo()
             const_name="_MC"
         elif const_var==2:
-            self.const=polar_construction.Improved_GA()
+            self.const=iGA.Improved_GA()
             const_name="_iGA"
         elif const_var==3:
             self.const=RCA.RCA()
@@ -72,15 +73,20 @@ class Mysystem_Polar:
             #if self.BICM==True:  
                 #self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
             #else:
-            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
         else:
             #if self.BICM==True:  
                 #self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
             #else:
-            self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
                 
-            self.cd.design_SNR==EsNodB
-            
+            self.cd.design_SNR==EsNodB    
+            self.cd.frozen_bits=frozen_bits
+            self.ec.frozen_bits=frozen_bits
+            self.dc.frozen_bits=frozen_bits
+            self.cd.info_bits=info_bits
+            self.ec.info_bits=info_bits
+            self.dc.info_bits=info_bits
         #for iGA and RCA and monte_carlo construction
                 
         EsNo = 10 ** (EsNodB / 10)
@@ -206,7 +212,7 @@ if __name__=='__main__':
     K=512 #symbol数
     M=4
     
-    EsNodB=2.0
+    EsNodB=3.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

@@ -5,9 +5,10 @@ from decimal import *
 import sys
 import multiprocessing
 import pickle
+from polar_code import iGA
 
 class coding():
-  def __init__(self,N,K,design_SNR=0):
+  def __init__(self,N,K):
     '''
     polar_decode
     Lc: LLR fom channel
@@ -19,12 +20,12 @@ class coding():
     self.N=N
     self.K=K
     self.R=K/N
-    self.design_SNR=design_SNR
+    self.design_SNR=0
     
     #settings
     self.adaptive_design_SNR=False #default:False
     self.systematic_polar=False #default:false
-    self.decoder_ver=0 #0:SC 1:SCL 2:CA_SCL
+    self.decoder_ver=2 #0:SC 1:SCL 2:CA_SCL
 
     self.bit_reversal_sequence=self.reverse_bits()
 
@@ -32,7 +33,7 @@ class coding():
     #1+x+x^2+....
     self.CRC_polynomial =np.array([1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1])
       
-    self.const=Improved_GA()#monte_carlo() #Improved_GA()
+    self.const=iGA.Improved_GA()#monte_carlo() #Improved_GA()
       
       #flozen_bit selection 
     if self.decoder_ver==2:

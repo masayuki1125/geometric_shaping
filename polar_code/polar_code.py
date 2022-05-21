@@ -1,28 +1,16 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-
 import numpy as np
 import math
 from decimal import *
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname('__file__'), '..'))
-from channel.AWGN import _AWGN
-from modulation.modulation import QAMModem
-from polar_construction import Improved_GA
-from polar_construction import GA
-from polar_construction import monte_carlo
+from AWGN import _AWGN
 
-# In[2]:
+ch=_AWGN()
 
+
+# In[362]:
 
 
 class coding():
-  def __init__(self,N,K,beta=1,M=2,Rayleigh=False):
+  def __init__(self,N):
     super().__init__()
     '''
     polar_decode
@@ -32,111 +20,101 @@ class coding():
     1:simplified SCL decoder
     2:simplified CA SCL decoder
     '''
+    self.decoder_var=1 #0:SC 1:SCL_CRC
     self.N=N
-    #self.K=math.floor(self.R*self.N)
-    self.K=K #K=0 :monte_carlo_construction
-    self.R=K/N
-    self.design_SNR=0
-    self.Rayleigh=Rayleigh
-    
-    #decide channel coding variance
-    self.ch=_AWGN(beta,M)
-    
-    if self.K!=0:
-      self.const=Improved_GA() #Improved_GA,GA
-      self.decoder_var=2 #0:SC 1:SCL 2:SCL_CRC
-    if self.K==0: #for monte_carlo_construction
-      self.decoder_var=0
-      self.const=GA()
-    
-    self.adaptive_design_SNR=False #default:False
-    self.systematic_polar=False #default:false
+    self.R=0.5
+    self.K=math.floor(self.R*self.N)
+    self.design_SNR=1
 
     #for SCL decoder
     self.list_size=4
 
     #prepere constants
-    self.itr_num=int(math.log2(self.N))
+    self.itr_num=np.log2(self.N).astype(int)
     self.bit_reversal_sequence=self.reverse_bits()
 
+    #for construction(GA)
+    self.G_0=0.2
+    self.G_1=0.7
+    self.G_2=10
+    self.a0=-0.002706
+    self.a1=-0.476711
+    self.a2=0.0512
+    self.a=-0.4527
+    self.b=0.0218
+    self.c=0.86
+    self.K_0=8.554
+
+    self.Z_0=self.xi(self.G_0)
+    self.Z_1=self.xi(self.G_1)
+    self.Z_2=self.xi(self.G_2)
+
     #for encoder (CRC poly)
-    #1+x+x^2+....
-    self.CRC_polynomial =np.array([1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1])
+    #x^15+x^14+...+x+1
+    self.CRC_polynomial =np.array([1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
     self.CRC_len=len(self.CRC_polynomial)
-    
-    #flozen_bit selection 
-    self.frozen_bits,self.info_bits=self.choose_frozen_bits(self.design_SNR)  
-    
-    if self.systematic_polar==True:
-      self.filename="systematic_"+self.filename
-      
-      
 
-
-# In[3]:
-
-
-class coding(coding):
-  def choose_frozen_bits(self,design_SNR,beta=1000):
     if self.decoder_var==0:
       self.filename="polar_SC_{}_{}".format(self.N,self.K)
       #construction
-      frozen_bits,info_bits=self.const.main_const(self.N,self.K,design_SNR,beta)
+      self.frozen_bits,self.info_bits=self.Improved_GA(self.K)
     
     elif self.decoder_var==1:
-      self.filename="polar_SCL_{}_{}_{}".format(self.N,self.K,self.list_size)
+      self.filename="polar_SCL_{}_{}".format(self.N,self.K)
       #construction
-      frozen_bits,info_bits=self.const.main_const(self.N,self.K,design_SNR,beta)
-        
-    elif self.decoder_var==2:
-      self.filename="polar_SCL_CRC_{}_{}_{}".format(self.N,self.K,self.list_size)
-      #construction
-      frozen_bits,info_bits=self.const.main_const(self.N,self.K+self.CRC_len-1,design_SNR,beta)
+      self.frozen_bits,self.info_bits=self.Improved_GA(self.K)
       
-    return frozen_bits,info_bits
     
+    elif self.decoder_var==2:
+      self.filename="polar_SCL_CRC_{}_{}".format(self.N,self.K)
+      #construction
+      self.frozen_bits,self.info_bits=self.Improved_GA(self.K+self.CRC_len-1)
+      
 
 
-# In[4]:
+# In[363]:
 
 
 class coding(coding):
-  #reffered to https://dl.acm.org/doi/pdf/10.5555/1074100.1074303
   @staticmethod
   def cyclic(data,polynomial,memory):
-    res=np.zeros(len(memory))
-    pre_data=(memory[len(memory)-1]+data)%2
-    res[0]=pre_data
+    tmp=-1*np.ones(len(memory)+1,dtype=int)
+    tmp[len(tmp)-1]=data
+    pre_data=memory[0]
+    tmp[:len(tmp)-1]=memory
 
-    for i in range(1,len(polynomial)-1):
+    for i in range(len(polynomial)-1):
       if polynomial[i]==1:
-        res[i]=(pre_data+memory[i-1])%2
+        tmp[i]=(pre_data+tmp[i+1])%2
       else:
-        res[i]=memory[i-1]
+        tmp[i]=tmp[i+1]
 
-    return res
+    #from IPython.core.debugger import Pdb; Pdb().set_trace()
+    memory=tmp[:len(memory)]
 
-# In[5]:
+    return memory
+
+
+# In[364]:
+
 
 class coding(coding):
-  def CRC_gen(self,information,polynomial):
-    parity=np.zeros(len(polynomial)-1)
+  def CRC_gen(self,information,parity,polynomial):
     CRC_info=np.zeros(len(information)+len(parity),dtype='int')
     CRC_info[:len(information)]=information
     CRC_info[len(information):]=parity
 
     memory=np.zeros(len(polynomial)-1,dtype='int')
     CRC_info[:len(information)]=information
-    for i in range(len(information)):
-      memory=self.cyclic(information[i],polynomial,memory)
-      #print(memory)
+    for i in range(len(CRC_info)):
+      memory=self.cyclic(CRC_info[i],polynomial,memory)
     #print(len(memory))
-    CRC_info[len(information):]=memory[::-1]
+    CRC_info[len(information):]=memory
     
     return CRC_info,np.all(memory==0)
 
 
-# In[6]:
+# In[365]:
 
 
 class coding(coding):
@@ -157,31 +135,168 @@ class coding(coding):
     return res
 
 
-# In[7]:
+# In[366]:
+
+
+class coding(coding):
+   
+  def xi(self,gamma):
+
+    if gamma<=self.G_0:
+      zeta=-1*gamma/2+(gamma**2)/8-(gamma**3)/8
+    
+    elif self.G_0<gamma<=self.G_1:
+      zeta=self.a0+self.a1*gamma+self.a2*(gamma**2)
+
+    elif self.G_1<gamma<self.G_2:
+      zeta=self.a*(gamma**self.c)+self.b
+
+    elif self.G_2<=gamma:
+      zeta=-1*gamma/4+math.log(math.pi)/2-math.log(gamma)/2+math.log(1-(math.pi**2)/(4*gamma)+self.K_0/(gamma**2))
+    
+    if zeta>0:
+      print("zeta is + err")
+
+    return zeta
+
+  def xi_inv(self,zeta):
+
+    if self.Z_0<=zeta:
+      gamma=-2*zeta+zeta**2+zeta**3
+
+    elif self.Z_1<=zeta<self.Z_0:
+      gamma=(-1*self.a1-(self.a1**2-4*self.a2*(self.a0-zeta))**(1/2))/(2*self.a2)
+
+    elif self.Z_2<zeta<self.Z_1:
+      gamma=((zeta-self.b)/self.a)**(1/self.c)
+
+    elif zeta<=self.Z_2:
+      gamma=self.bisection_method(zeta)
+      #gamma=-4*zeta
+
+    if gamma<0:
+      print("gamma is - err")
+
+    return gamma
+
+
+# In[367]:
+
+
+class coding(coding):
+  def bisection_method(self,zeta):
+
+    #set constant
+    min_num=self.G_2
+    max_num=10**7
+    error_accept=1
+
+    def f(x):
+      zeta=-1*x/4+math.log(math.pi)/2-math.log(x)/2+math.log(1-(math.pi**2)/(4*x)+self.K_0/(x**2))
+      return zeta
+
+    #initial value
+    a=min_num
+    b=max_num
+    error=b-a
+
+    #very small zeta situation
+    if f(max_num)>zeta:
+      print(f(max_num))
+      print(zeta)
+      gamma=max_num
+
+    else:
+
+      while error>error_accept:
+        c=(b+a)/2 #center value
+
+        if f(c)>=zeta:
+          a=c
+          error=b-a
+        
+        elif f(c)<zeta:
+          b=c
+          error=b-a
+        
+        if error<0:
+          print("something is wrong")
+        #print("\r",error,end="")
+      
+      gamma=(b+a)/2
+
+      if gamma<0:
+        print("gamma is - err")
+
+    return gamma
+
+
+# In[368]:
+
+
+class coding(coding):
+    
+  def Improved_GA(self,K,bit_reverse=True):
+    gamma=np.zeros(self.N)
+    
+    gamma[0]=4*self.design_SNR
+    for i in range(1,self.itr_num+1):
+      J=2**(i-1)
+      for j in range(0,J):
+        u=gamma[j]
+        if u<=self.G_0:
+          gamma[j]=(u**2)/2-(u**3)/2+2*(u**4)/3
+        else:
+          z=self.xi(u)
+          gamma[j]=self.xi_inv(z+math.log(2-math.e**z))
+        
+        gamma[j+J]=2*u
+  
+    tmp=self.indices_of_elements(gamma,self.N)
+    frozen_bits=np.sort(tmp[:self.N-K])
+    info_bits=np.sort(tmp[self.N-K:])
+
+    if bit_reverse==True:
+      for i in range(len(frozen_bits)):
+        frozen_bits[i]=self.reverse(frozen_bits[i])
+      frozen_bits=np.sort(frozen_bits)
+
+      for i in range(len(info_bits)):
+        info_bits[i]=self.reverse(info_bits[i])
+      info_bits=np.sort(info_bits)
+
+    return frozen_bits,info_bits
+
+  @staticmethod
+  def indices_of_elements(v,l):
+    tmp=np.argsort(v)
+    res=tmp[0:l]
+    return res
+
+
+# In[369]:
 
 
 class encoding(coding):
-  def __init__(self,N,K,beta=1,M=2,Rayleigh=False):
-    super().__init__(N,K,beta,M,Rayleigh)
+  def __init__(self,N):
+    super().__init__(N)
   
   def generate_information(self):
     #generate information
-    
-    if self.K!=0:
-      information=np.random.randint(0,2,self.K)
-    
-    else:
-      information=np.zeros(self.K)
+    information=np.random.randint(0,2,self.K)
+    #information=np.zeros(self.K)
 
     if self.decoder_var==0 or self.decoder_var==1:
       return information
     
     elif self.decoder_var==2:
       parity=np.zeros(len(self.CRC_polynomial)-1)
-      CRC_info,_=self.CRC_gen(information,self.CRC_polynomial)
+      CRC_info,_=self.CRC_gen(information,parity,self.CRC_polynomial)
 
       ##check CRC_info
-      _,check=self.CRC_gen(CRC_info,self.CRC_polynomial)
+      parity=CRC_info[len(information):]
+      information=CRC_info[:len(information)]
+      _,check=self.CRC_gen(information,parity,self.CRC_polynomial)
       if check!=True:
         print("CRC_info error")
       
@@ -210,89 +325,22 @@ class encoding(coding):
         codeword = np.concatenate([self.encode(u1u2), self.encode(u2)])
     return codeword
 
-
-# In[8]:
-
-
-#print(ec.frozen_bits)
-#print(ec.info_bits)
-class encoding(encoding):
-  def systematic_encode(self,information):
-    X=np.zeros((self.N,self.itr_num+1))
-    X[self.frozen_bits,0]=0
-    X[self.info_bits,self.itr_num]=information
-
-    for i in reversed(range(1,self.N+1)):
-      if np.any(i-1==self.info_bits):
-        s=self.itr_num+1
-        delta=-1
-      else:
-        s=1
-        delta=1
-
-      #binary representation
-      tmp=format (i-1,'b')
-      b=tmp.zfill(self.itr_num+1)
-        
-      for j in range(1,self.itr_num+1):
-        t=s+delta*j
-        l=min(t,t-delta)
-        kai=2**(self.itr_num-l)
-        #print(l)
-        if int(b[l])==0:
-          #print("kai")
-          #print(i-kai-1)
-          #print(i-1)
-          X[i-1,t-1]=(X[i-1,t-delta-1]+X[i+kai-1,t-delta-1])%2
-        
-        else:
-          #print("b")
-          #print("kai")
-          #print(i-kai)
-          X[i-1,t-1]=X[i-1,t-delta-1]
-        
-    #print(X)
-
-    #check
-    x=X[:,self.itr_num]
-    y=X[:,0]
-    codeword=self.encode(y[self.bit_reversal_sequence])
-    if np.any(codeword!=x):
-      print(codeword)
-      print("err")
-    
-    return x
-      
-
-
-# In[9]:
-
-
-class encoding(encoding):
   def polar_encode(self):
     information=self.generate_information()
-    
-    if self.systematic_polar==False:
-      u_message=self.generate_U(information)
-      codeword=self.encode(u_message[self.bit_reversal_sequence])
-    
-    elif self.systematic_polar==True:
-      codeword=self.systematic_encode(information)
-    
-    tmp=np.zeros(len(codeword))
-    tmp=codeword
+    u_message=self.generate_U(information)
+    codeword=self.encode(u_message[self.bit_reversal_sequence])
     #codeword=u_message@self.Gres%2
-    return information,tmp
+    return information,codeword
 
 
-# In[10]:
+# In[370]:
 
 
 class decoding(coding):
 
-  def __init__(self,N,K,beta=1,M=2,Rayleigh=False):
-    super().__init__(N,K,beta,M,Rayleigh)
-    
+  def __init__(self,N):
+    super().__init__(N)
+   
   @staticmethod
   def chk(llr_1,llr_2):
     CHECK_NODE_TANH_THRES=30
@@ -311,7 +359,7 @@ class decoding(coding):
     return res
 
 
-# In[11]:
+# In[371]:
 
 
 class decoding(decoding):
@@ -328,6 +376,9 @@ class decoding(decoding):
     before_process=0# 0:left 1:right 2:up 3:leaf
 
     while True:
+      
+      #interior node operation
+      #up node operation
   
       #left node operation
       if before_process!=2 and before_process!=3 and length%2**(self.itr_num-depth)==0:
@@ -341,9 +392,6 @@ class decoding(decoding):
 
       #right node operation 
       elif before_process!=1 and length%2**(self.itr_num-depth)==2**(self.itr_num-depth-1):
-        
-        #print(length%2**(self.itr_num-depth))
-        #print(2**(self.itr_num-depth-1))
         
         depth+=1
         before_process=1
@@ -384,29 +432,13 @@ class decoding(decoding):
         depth-=1 #back to depth
         before_process=3
         
-        #from IPython.core.debugger import Pdb; Pdb().set_trace()
-        #print(llr)
-        #print(EST_codeword)
-        
         if length==self.N:
           break
     
-    if self.K!=0: 
-      res=EST_codeword[self.itr_num]
-    else:
-      res=llr[self.itr_num]
-      #np.savetxt("llr",res)
-      #from IPython.core.debugger import Pdb; Pdb().set_trace()
-      
-    if self.systematic_polar==True:
-      #re encode polar
-      u_message=self.generate_U(res[self.info_bits])
-      res=self.encode(u_message[self.bit_reversal_sequence])
-    
-    return res
+    return EST_codeword[self.itr_num]
 
 
-# In[12]:
+# In[372]:
 
 
 class decoding(decoding):
@@ -435,7 +467,6 @@ class decoding(decoding):
     before_process=0# 0:left 1:right 2:up 3:leaf
     branch=1#the number of branchs. 1 firstly, and increase up to list size 
     BM=np.full((self.list_size,2),10.0**10)#branch metrics
-    # low BM is better
 
     while True:
       
@@ -448,6 +479,7 @@ class decoding(decoding):
 
         tmp1=llr[:,depth-1,length:length+2**(self.itr_num-depth)]
         tmp2=llr[:,depth-1,length+2**(self.itr_num-depth):length+2**(self.itr_num-depth+1)]
+        
 
         #carculate each list index
         for i in range(branch):
@@ -479,6 +511,9 @@ class decoding(decoding):
 
         depth-=1
         before_process=2
+      
+      else:
+        print("error!")
 
       #leaf node operation
       if depth==self.itr_num:
@@ -489,11 +524,6 @@ class decoding(decoding):
           #decide each list index
           for i in range(branch):
             EST_codeword[i,depth,length]=0
-          
-          #update path metric
-          u_tilde=-1#because frozen_bit is 0
-          for i in range(branch):
-            PML[i]=PML[i]+self.calc_BM(u_tilde,llr[i,depth,length])
         
         #info_bit operation
         else :
@@ -502,19 +532,21 @@ class decoding(decoding):
           for i in range(branch):
 
             u_tilde=-1*np.sign(llr[i,depth,length])#[-1,1]
-            #llr<0 -> u_tilde=1 u_hat=1 // u_hat(sub)=0
-            #llr>0 -> u_tilde=-1 u_hat=0 // u_hat(sub)=1
-            
-            #decide main u_hat 
-            tmp0=self.calc_BM(u_tilde,llr[i,depth,length])
-            tmp1=self.calc_BM(-1*u_tilde,llr[i,depth,length])
-            BM[i,int((u_tilde+1)//2)]=tmp0
 
-            #decide sub u_hat
-            BM[i,int((-1*u_tilde+1)//2)]=tmp1
+            #decide main u_hat. PM
+            BM[i,int((u_tilde+1)//2)]=self.calc_BM(u_tilde,llr[i,depth,length])
+
+            #decide sub u_hat. PM
+            BM[i,int((-1*u_tilde+1)//2)]=self.calc_BM(-1*u_tilde,llr[i,depth,length])
 
           #branch*2 path number
           #update PM
+          
+          #print("before PML")
+          #print(PML)
+          #print(np.tile(PML[0:branch,None],(1,2)))
+          #print("before BM")
+          #print(BM)
 
           #update BM to PML 2d array
           BM[0:branch]+=np.tile(PML[0:branch,None],(1,2))
@@ -526,12 +558,19 @@ class decoding(decoding):
 
           #trim PML 2d array and update PML
           PML[0:branch]=np.sort(np.ravel(BM))[0:branch]
-          list_num=np.argsort((np.ravel(BM)))[0:branch]//2#i番目のPMを持つノードが何番目のリストから来たのか特定する
-          u_hat=np.argsort((np.ravel(BM)))[0:branch]%2##i番目のPMを持つノードがu_hatが0か1か特定する
+
+
+          #print("updated BM")
+          #print(BM)
+          #print("updated PML")
+          #print(PML)
+          #from IPython.core.debugger import Pdb; Pdb().set_trace()
           
           #copy before data
           #選ばれたパスの中で、何番目のリストが何番目のリストからの派生なのかを計算する
           #その後、llr，EST_codewordの値をコピーし、今計算しているリーフノードの値も代入する
+          list_num=np.argsort((np.ravel(BM)))[0:branch]//2#i番目のPMを持つノードが何番目のリストから来たのか特定する
+          u_hat=np.argsort((np.ravel(BM)))[0:branch]%2##i番目のPMを持つノードがu_tildeが0か1か特定する
           llr[0:branch]=llr[list_num,:,:]#listを並び替えru
           EST_codeword[0:branch]=EST_codeword[list_num,:,:]
           EST_codeword[0:branch,depth,length]=u_hat
@@ -544,46 +583,24 @@ class decoding(decoding):
         if length==self.N:
           break
     
-    res_list_num=0
-    res=np.zeros((self.list_size,self.N))
-    #print(res.shape)
-    #print(res[i].shape)
-         
-      #set candidates
-    for i in range(self.list_size):
-      res[i,:]=EST_codeword[i,self.itr_num]
-        
-    #for systematic_polar
-    if self.systematic_polar==True:
-      #re encode polar
-      for i in range(self.list_size):
-        #print(i)
-        #print(res[i][self.info_bits])
-        u_message=self.generate_U(res[i,:][self.info_bits])
-        res[i,:]=self.encode(u_message[self.bit_reversal_sequence])
     
- 
+    res_list_num=0
     
     #CRC_check
     if self.decoder_var==2:
       for i in range(self.list_size):
-        EST_CRC_info=res[i][self.info_bits]
-        _,check=self.CRC_gen(EST_CRC_info,self.CRC_polynomial)
+        EST_CRC_info=EST_codeword[i,self.itr_num][self.info_bits]
+        _,check=self.CRC_gen(EST_CRC_info[:self.K],EST_CRC_info[self.K:],self.CRC_polynomial)
         #print(check)
         if check==True:
           res_list_num=i
           break
-      
-      #else:
-        #print("no codeword")
     #print("CRC_err")
-
-    #print("\r",PML,end="")
     
-    return res[res_list_num]
+    return EST_codeword[res_list_num,self.itr_num]
 
 
-# In[13]:
+# In[373]:
 
 
 class decoding(decoding):
@@ -602,37 +619,21 @@ class decoding(decoding):
 
     elif self.decoder_var==1 or self.decoder_var==2:
       EST_codeword=self.SCL_decoding(Lc)
-      
-    if self.K==0:
-      res=EST_codeword
-    else:
-      res=EST_codeword[self.info_bits]
-    return res
+
+    EST_information=EST_codeword[self.info_bits]
+    return EST_information
 
 
-# In[14]:
+# In[374]:
 
 
 class polar_code(encoding,decoding):
-  def __init__(self,N,K,beta=1,M=2,Rayleigh=False):
-    super().__init__(N,K,beta,M,Rayleigh)
+  def __init__(self,N):
+    super().__init__(N)
 
   def main_func(self,EbNodB): 
-    EbNo = 10 ** (EbNodB / 10)
-    No=1/EbNo
-    if self.adaptive_design_SNR==True:
-      if self.design_SNR!=EbNodB:
-        self.design_SNR=EbNodB
-        self.frozen_bits,self.info_bits=self.choose_frozen_bits(self.design_SNR)
-    modem=QAMModem(4)
-    ch=_AWGN()
     information,codeword=self.polar_encode()
-    codeword=codeword.astype(np.int)
-    #codeword=np.random.randint(0,2,len(codeword))
-    TX_const=modem.modulate(codeword)
-    RX_const=ch.add_AWGN(TX_const,No)
-    #print(RX_const)
-    Lc=modem.demodulate(RX_const,No)
+    Lc=-1*ch.generate_LLR(codeword,EbNodB)#デコーダが＋、ー逆になってしまうので-１をかける
     EST_information=self.polar_decode(Lc) 
       
     if len(EST_information)!=len(information):
@@ -640,15 +641,14 @@ class polar_code(encoding,decoding):
 
     return information,EST_information
 
-# In[15]:
+
+# In[375]:
+
 
 if __name__=="__main__":
 
     N=1024
-    K=512
-    M=4
-    Rayleigh=False
-    pc=polar_code(N,K,0.2,M,Rayleigh)
+    pc=polar_code(N)
     #a,b=pc.main_func(1)
     #print(len(a))
     #print(len(b))
@@ -657,17 +657,15 @@ if __name__=="__main__":
       count_all=0
       count_berr=0
       count_ball=0
-      MAX_ERR=20
+      MAX_ERR=8
 
       while count_err<MAX_ERR:
         
-        #pc=polar_code(N,K)
+        pc=polar_code(N)
         information,EST_information=pc.main_func(EbNodB)
       
         if np.any(information!=EST_information):#BLOCK error check
           count_err+=1
-          #from IPython.core.debugger import Pdb; Pdb().set_trace()
-          
         
         count_all+=1
 
@@ -678,9 +676,6 @@ if __name__=="__main__":
         print("\r","count_all=",count_all,",count_err=",count_err,"count_ball="              ,count_ball,"count_berr=",count_berr,end="")
 
       print("BER=",count_berr/count_ball)
-      
       return  count_err,count_all,count_berr,count_all
     
-    output(3)
-    
-
+    output(0)
