@@ -50,7 +50,7 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=10
-        self.EbNodB_start=15
+        self.EbNodB_start=0
         self.EbNodB_end=25
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
@@ -116,11 +116,11 @@ class MC():
                 BLER[j]=count_err/count_all
                 BER[j]=count_biterr/count_bitall
 
-                if count_err/count_all<10**-4:
+                print("\r"+"EbNodB="+str(EbNodB)+",BLER="+str(BLER[j])+",BER="+str(BER[j]),end="")
+                
+                if count_err/count_all<10**-5:
                     print("finish")
                     break
-
-                print("\r"+"EbNodB="+str(EbNodB)+",BLER="+str(BLER[j])+",BER="+str(BER[j]),end="")
             
             #特定のNについて終わったら出力
             st=savetxt(M,self.K)
