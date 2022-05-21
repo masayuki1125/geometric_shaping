@@ -26,10 +26,17 @@ class Mysystem:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        #self.const=monte_carlo_construction.monte_carlo()
-        #self.const=polar_construction.Improved_GA()
-        #self.const=RCA.RCA()
-        self.BICM=False 
+        const_var=2
+        if const_var==1:
+            self.const=monte_carlo_construction.monte_carlo()
+            const_name="_MC"
+        elif const_var==2:
+            self.const=polar_construction.Improved_GA()
+            const_name="_iGA"
+        elif const_var==3:
+            self.const=RCA.RCA()
+            const_name="_RCA"
+        self.BICM=True 
         
         if self.BICM==True:
             #make BICM directory
@@ -76,7 +83,8 @@ class Mysystem:
         self.ch=AWGN._AWGN()
         
         #filename
-        self.filename="polar_code_{}_{}_{}_exactLLR".format(self.N,self.K,self.M)
+        self.filename="polar_code_{}_{}_{}".format(self.N,self.K,self.M)
+        self.filename=self.filename+const_name
         if self.BICM==True:
             self.filename=self.filename+"_BICM"
             
@@ -318,6 +326,7 @@ class Mysystem():
         
         return info,EST_info
 '''
+'''
 class Mysystem():
     def __init__(self,M,K):
         self.M=M
@@ -451,11 +460,12 @@ class Mysystem():
             Lc=Lc[self.BICM_deint]
         EST_cwd=self.dc.LDPC_decode(Lc)
         return cwd,EST_cwd
+'''
 
 if __name__=='__main__':
     K=512 #symbol数
     M=4
-    EsNodB=-3.0
+    EsNodB=0.0
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)

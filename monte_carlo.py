@@ -116,9 +116,9 @@ class MC():
                 BLER[j]=count_err/count_all
                 BER[j]=count_biterr/count_bitall
 
-                #if count_biterr/count_bitall<10**-4:
-                    #print("finish")
-                    #break
+                if count_err/count_all<10**-4:
+                    print("finish")
+                    break
 
                 print("\r"+"EbNodB="+str(EbNodB)+",BLER="+str(BLER[j])+",BER="+str(BER[j]),end="")
             
@@ -161,7 +161,7 @@ if __name__=="__main__":
     print("K=",K)
     print("aiueo")
     mc=MC(K)
-    M_list=[256]
+    M_list=[4,16,256]
     result_ids_array=[]
     print(mc.EbNodB_range)
     for M in M_list:
