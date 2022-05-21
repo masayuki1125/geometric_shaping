@@ -2,7 +2,9 @@ import numpy as np
 import scipy
 from scipy import sparse
 import numpy as np
-import math 
+import math
+
+from sympy import LC 
 
 class decoding():
     def __init__(self,cd):
@@ -69,6 +71,7 @@ class decoding():
         return beta
 
     def sum_product(self,Lc):
+        
         # initialization
         L_mat = self.H.dot(sparse.spdiags(Lc, 0, self.n, self.n, 'csr'))
         
@@ -103,6 +106,9 @@ class decoding():
         return EST_codeword
 
     def LDPC_decode(self,Lc):
+        #Lcをプラスとマイナス逆にする
+        Lc=-1*Lc
+        
         EST_codeword=self.sum_product(Lc)
         #EST_information=EST_codeword[(self.N-self.K):] #systematicじゃないので、情報ビットだけで測れない
         return EST_codeword

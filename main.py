@@ -180,7 +180,7 @@ class Mysystem_LDPC():
             cwd=cwd[self.BICM_int]
         TX_conste=self.modem.modulate(cwd)
         RX_conste=self.ch.add_AWGN(TX_conste,No)
-        Lc=-1*self.modem.demodulate(RX_conste,No)
+        Lc=self.modem.demodulate(RX_conste,No)
         if self.BICM==True:
             Lc=Lc[self.BICM_deint]
         EST_cwd=self.dc.LDPC_decode(Lc)
@@ -203,6 +203,7 @@ if __name__=='__main__':
     K=512 #symbol数
     M=256
     EsNodB=20.0
+    print(EsNodB)
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
