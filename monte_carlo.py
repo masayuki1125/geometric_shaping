@@ -51,7 +51,7 @@ class MC():
         self.RX_antenna=1
         self.MAX_ERR=100
         self.EbNodB_start=0
-        self.EbNodB_end=25
+        self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -159,11 +159,22 @@ class savetxt():
 if __name__=="__main__":
     K=512
     print("K=",K)
-    mc=MC(K)
+    
     M_list=[4,16,256]
     result_ids_array=[]
-    print(mc.EbNodB_range)
+    
     for M in M_list:
+        mc=MC(K)
+        if M==16:
+            mc.EbNodB_start+=5
+            mc.EbNodB_end+=5
+            mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
+        elif M==256:
+            mc.EbNodB_start+=10
+            mc.EbNodB_end+=10
+            mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
+        print(mc.EbNodB_range)
+        
         cd=Mysystem(M,K)
         dumped=pickle.dumps(cd)
         print("M",M)

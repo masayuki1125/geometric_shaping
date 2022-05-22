@@ -22,7 +22,7 @@ class coding():
 
     self.H=self.generate_regular_H() 
     
-    self.tG=self.HtotG()[:,0:self.K]
+    self.tG=self.HtotG()#[:,0:self.K]
     
     self.filename="regular_LDPC_code_{}_{}".format(self.N,self.K)
     #check
