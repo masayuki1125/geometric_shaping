@@ -146,7 +146,7 @@ class Improved_GA(Improved_GA):
 # In[7]:
 
 class Improved_GA(Improved_GA):
-  def main_const(self,N,K,design_SNR,M=2):
+  def main_const(self,N,K,design_SNR,M=2,**kwargs): #kwargsは使わない
     bit_reverse=True
         #make n where 2**n=N
     n=np.log2(N).astype(int)
@@ -177,6 +177,8 @@ class Improved_GA(Improved_GA):
     tmp=self.indices_of_elements(gamma,N)
     frozen_bits=np.sort(tmp[:N-K])
     info_bits=np.sort(tmp[N-K:])
+    
+    #bit reverse permutation
     if bit_reverse==True:
       for i in range(len(frozen_bits)):
         frozen_bits[i]=self.reverse(frozen_bits[i],n)

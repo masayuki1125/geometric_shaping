@@ -289,7 +289,7 @@ class decoding():
       for i in range(self.list_size):
         EST_CRC_info=res[i][self.info_bits]
         _,check=self.CRC_gen(EST_CRC_info,self.CRC_polynomial)
-        print(check)
+        #print(check)
         if check==True:
           res_list_num=i
           break

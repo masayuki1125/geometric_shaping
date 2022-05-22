@@ -19,15 +19,15 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_BITALL=10**4
-    MAX_BITERR=10**2
+    MAX_ALL=10**2
+    MAX_ERR=1
     count_bitall=0
     count_biterr=0
     count_all=0
     count_err=0
     
 
-    while count_all<MAX_BITALL and count_err<MAX_BITERR:
+    while count_all<MAX_ALL and count_err<MAX_ERR:
         #print("\r"+str(count_err),end="")
         information,EST_information=cd.main_func(EbNodB)
         
@@ -49,7 +49,7 @@ class MC():
         self.K=K
         self.TX_antenna=1
         self.RX_antenna=1
-        self.MAX_ERR=10
+        self.MAX_ERR=100
         self.EbNodB_start=0
         self.EbNodB_end=25
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
@@ -118,7 +118,7 @@ class MC():
 
                 print("\r"+"EbNodB="+str(EbNodB)+",BLER="+str(BLER[j])+",BER="+str(BER[j]),end="")
                 
-                if count_biterr/count_bitall<10**-5:
+                if count_err/count_all<10**-5:
                     print("finish")
                     break
             
@@ -150,7 +150,7 @@ class savetxt():
         #print("#RX_antenna="+str(self.mc.RX_antenna),file=f)
         #print("#modulation_symbol="+str(self.ch.M),file=f)
         #print("#MAX_BLERR="+str(self.mc.MAX_ERR),file=f)
-        print("#construction="+str(self.mysys.const),file=f)
+        #print("#construction="+str(self.mysys.const),file=f)
         print("#EsNodB,BLER,BER",file=f)  
         for i in range(len(self.mc.EbNodB_range)):
             print(str(self.mc.EbNodB_range[i]),str(BLER[i]),str(BER[i]),file=f)
@@ -159,7 +159,6 @@ class savetxt():
 if __name__=="__main__":
     K=512
     print("K=",K)
-    print("aiueo")
     mc=MC(K)
     M_list=[4,16,256]
     result_ids_array=[]

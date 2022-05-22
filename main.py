@@ -21,7 +21,7 @@ from modulation import modulation
 from modulation.BICM import make_BICM
 from channel import AWGN
 
-FEC=1 #1:polar code 2:turbo code 3:LDPC code
+FEC=3 #1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):
@@ -30,7 +30,7 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=False 
+        self.BICM=True 
         const_var=2
         
         #for construction
@@ -44,7 +44,6 @@ class Mysystem_Polar:
             self.const=RCA.RCA()
             const_name="_RCA"
         
-                
         #coding
         self.cd=polar_construction.coding(self.N,self.K)
         self.ec=polar_encode.encoding(self.cd)
@@ -70,23 +69,30 @@ class Mysystem_Polar:
         #adaptive dicision of frozen bits
         if self.cd.decoder_ver==2:
             CRC_len=len(self.cd.CRC_polynomial)-1  
-            #if self.BICM==True:  
-                #self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
-            #else:
             frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
         else:
-            #if self.BICM==True:  
-                #self.cd.frozen_bits,self.cd.info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
-            #else:
             frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
+        
+        #if BICM is True:
+        if self.BICM==True:#BICM purmutation
+            if self.cd.decoder_ver==2:
+                CRC_len=len(self.cd.CRC_polynomial)-1  
+                frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
+            else:
+                frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
+            
+        #check
+        for i in range(self.N):
+            if (np.any(i==frozen_bits) or np.any(i==info_bits))==False:
+                raise ValueError("The frozen set or info set is overlapped")
                 
-            self.cd.design_SNR==EsNodB    
-            self.cd.frozen_bits=frozen_bits
-            self.ec.frozen_bits=frozen_bits
-            self.dc.frozen_bits=frozen_bits
-            self.cd.info_bits=info_bits
-            self.ec.info_bits=info_bits
-            self.dc.info_bits=info_bits
+        self.cd.design_SNR==EsNodB    
+        self.cd.frozen_bits=frozen_bits
+        self.ec.frozen_bits=frozen_bits
+        self.dc.frozen_bits=frozen_bits
+        self.cd.info_bits=info_bits
+        self.ec.info_bits=info_bits
+        self.dc.info_bits=info_bits
         #for iGA and RCA and monte_carlo construction
                 
         EsNo = 10 ** (EsNodB / 10)
@@ -102,8 +108,6 @@ class Mysystem_Polar:
             Lc=Lc[self.BICM_deint]
         EST_info=self.dc.polar_decode(Lc)
         
-        #print(EST_info)
-        #print(info)
         
         return info,EST_info
   
@@ -113,7 +117,7 @@ class Mysystem_Turbo():
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=False 
+        self.BICM=True 
         
         #coding
         self.cd=turbo_construction.coding(self.N,self.K)
@@ -157,7 +161,7 @@ class Mysystem_LDPC():
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=False 
+        self.BICM=True 
                 
         #coding
         self.cd=LDPC_construction.coding(self.N,self.K)
@@ -212,7 +216,7 @@ if __name__=='__main__':
     K=512 #symbol数
     M=4
     
-    EsNodB=3.0
+    EsNodB=2.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

@@ -32,8 +32,7 @@ class RCA():
         res=tmp[0:l]
         return res
 
-    def main_const(self,N,K,design_SNR,M=2):
-        
+    def main_const(self,N,K,design_SNR,M=2,**kwargs):
         '''
         input:
         N:codeword length
@@ -41,6 +40,13 @@ class RCA():
         design_SNR target EsNo dB
         M:modulation order
         '''
+        #extract from dictionary 
+        if kwargs.get('BICM_int') is not None:
+            BICM_int=kwargs.get("BICM_int")
+            BICM_deint=np.argsort(BICM_int)
+            BICM=True
+        else:
+            BICM=False
         
         #check if mapping is the divisor of N
         if N%int(math.log2(M))!=0:
@@ -65,6 +71,9 @@ class RCA():
             gamma=np.tile(tmp,N//int(math.log2(M)))
             
         xi=np.log(gamma)
+        
+        if BICM==True:
+            xi=xi[BICM_deint]
             
         
         #check if xi array is length N
