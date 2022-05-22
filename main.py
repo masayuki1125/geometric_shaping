@@ -21,7 +21,7 @@ from modulation import modulation
 from modulation.BICM import make_BICM
 from channel import AWGN
 
-FEC=1 #1:polar code 2:turbo code 3:LDPC code
+FEC=3 #1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):

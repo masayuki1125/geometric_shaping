@@ -137,6 +137,14 @@ class savetxt():
   def __init__(self,M,K):
     self.mysys=Mysystem(M,K)
     self.mc=MC(K)
+    if M==16:
+        mc.EbNodB_start+=5
+        mc.EbNodB_end+=5
+        mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
+    elif M==256:
+        mc.EbNodB_start+=10
+        mc.EbNodB_end+=10
+        mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
 
   def savetxt(self,BLER,BER):
     with open(self.mysys.filename,'w') as f:

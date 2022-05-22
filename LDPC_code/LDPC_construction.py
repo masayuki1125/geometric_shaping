@@ -15,7 +15,7 @@ class coding():
     #regular_LDPC
     #prepere constants
     self.Wc=3
-    self.Wr=6
+    self.Wr=int(self.Wc/self.R)
 
     if (self.Wr-self.Wc)/self.Wr!=self.R:
         print("encoder rate error")
