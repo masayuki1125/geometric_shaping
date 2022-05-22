@@ -162,6 +162,7 @@ class Mysystem_LDPC():
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         self.BICM=True 
+        self.BICM_ID=False
                 
         #coding
         self.cd=LDPC_construction.coding(self.N,self.K)

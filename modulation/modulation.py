@@ -205,7 +205,7 @@ class Modem:
             modulated = [self.code_book[dec] for dec in msg]
         return np.array(modulated)
 
-    def demodulate(self, x, No=1.):
+    def demodulate(self, x, No, BICM_ID=False):
         """ Demodulates complex symbols.
          Yes, MathWorks company provides several algorithms to demodulate
          BPSK, QPSK, 8-PSK and other M-PSK modulations in hard output manner:
@@ -222,10 +222,17 @@ class Modem:
             Decimal or binary stream to be demodulated.
         No: float
             Additive noise variance.
+        BICM_ID: bool
+            if decoder uses BICM_ID, the returns changes
+            self.soft_decision must be True
+        
         Returns
         -------
         result : 1-D array floats
             Demodulated message (LLRs or binary sequence).
+            
+        result (BICM_ID=True)
+            1D-list [llr ,euqrid_dist]
         """
 
         if self.soft_decision:
