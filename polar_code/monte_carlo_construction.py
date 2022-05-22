@@ -674,7 +674,7 @@ class Myconstruction:
 
 #%%
 if __name__=="__main__":
-
+    '''
     #initial constant
     M=4
     K=8
@@ -700,5 +700,17 @@ if __name__=="__main__":
     
     const=monte_carlo()
     print(const.main_const(N,K,EsNodB,M))
-    
+    '''
+    N=1024
+    K=512
+    M_list=[4,16,256]
+    EsNodB_list=np.arange(0,10,0.5)
+    for M in M_list:
+        for EsNodB in EsNodB_list:  
+            if M==16:
+                EsNodB+=5
+            elif M==256:
+                EsNodB+=5 
+            const=monte_carlo()
+            const.main_const(N,K,EsNodB,M)    
     
