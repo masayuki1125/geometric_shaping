@@ -50,8 +50,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=0
-        self.EbNodB_end=10
+        self.EbNodB_start=15
+        self.EbNodB_end=25
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -137,6 +137,7 @@ class savetxt():
   def __init__(self,M,K):
     self.mysys=Mysystem(M,K)
     self.mc=MC(K)
+    '''
     if M==16:
         mc.EbNodB_start+=5
         mc.EbNodB_end+=5
@@ -145,6 +146,7 @@ class savetxt():
         mc.EbNodB_start+=10
         mc.EbNodB_end+=10
         mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
+    '''
 
   def savetxt(self,BLER,BER):
     with open(self.mysys.filename,'w') as f:
@@ -168,11 +170,12 @@ if __name__=="__main__":
     K=512
     print("K=",K)
     
-    M_list=[4,16,256]
+    M_list=[256]
     result_ids_array=[]
     
     for M in M_list:
         mc=MC(K)
+        '''
         if M==16:
             mc.EbNodB_start+=5
             mc.EbNodB_end+=5
@@ -181,6 +184,7 @@ if __name__=="__main__":
             mc.EbNodB_start+=10
             mc.EbNodB_end+=10
             mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
+        '''
         print(mc.EbNodB_range)
         
         cd=Mysystem(M,K)

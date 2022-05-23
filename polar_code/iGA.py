@@ -174,6 +174,7 @@ class Improved_GA(Improved_GA):
           gamma[j]=self.xi_inv(z+math.log(2-math.e**z))
         
         gamma[j+J]=2*u
+    
     tmp=self.indices_of_elements(gamma,N)
     frozen_bits=np.sort(tmp[:N-K])
     info_bits=np.sort(tmp[N-K:])
@@ -187,6 +188,7 @@ class Improved_GA(Improved_GA):
         info_bits[i]=self.reverse(info_bits[i],n)
       info_bits=np.sort(info_bits)
     return frozen_bits,info_bits
+
   @staticmethod
   def indices_of_elements(v,l):
     tmp=np.argsort(v)

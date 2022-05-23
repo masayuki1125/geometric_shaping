@@ -21,7 +21,7 @@ from modulation import modulation
 from modulation.BICM import make_BICM
 from channel import AWGN
 
-FEC=3 #1:polar code 2:turbo code 3:LDPC code
+FEC=1 #1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):
@@ -30,8 +30,8 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=False 
-        const_var=1
+        self.BICM=True 
+        const_var=3
         
         #for construction
         if const_var==1:
@@ -59,6 +59,14 @@ class Mysystem_Polar:
         
         #BICM or not
         if self.BICM==True:
+            #悪いチャネルと良いチャネルを別々にしてみる
+            seq=np.arage(self.N)
+            num_of_channels=int(np.log2(self.M**(1/2)))
+            for i in range(num_of_channels):
+                =seq[i::num_of_channels]
+                odd=seq[]
+            
+            
             self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
             self.filename=self.filename+"_BICM"
         
@@ -163,6 +171,10 @@ class Mysystem_LDPC():
         self.N=self.K*2
         self.BICM=True 
         self.BICM_ID=False
+        
+        if self.BICM_ID==True:
+            self.BICM=True
+            self.BICM_ID_itr=10
                 
         #coding
         self.cd=LDPC_construction.coding(self.N,self.K)
@@ -193,12 +205,26 @@ class Mysystem_LDPC():
         if self.BICM==True:
             cwd=cwd[self.BICM_int]
         TX_conste=self.modem.modulate(cwd)
+        
+        #channel
         RX_conste=self.ch.add_AWGN(TX_conste,No)
-        Lc=self.modem.demodulate(RX_conste,No)
-        if self.BICM==True:
-            Lc=Lc[self.BICM_deint]
-        EST_cwd,EX_info=self.dc.LDPC_decode(Lc)
+        
+        #at the reciever
+        if self.BICM_ID==False:
+            #demodulate
+            Lc=self.modem.demodulate(RX_conste,No)
+            if self.BICM==True:
+                Lc=Lc[self.BICM_deint]
+            EST_cwd,_=self.dc.LDPC_decode(Lc)
+        
+        elif self.BICM_ID==True:
+            #demodulate      
+            Lc,[zeros,ones]=self.modem.demodulate(RX_conste,No,self.BICM_ID)
+            
+            #EST_cwd=BICM_ID_decode(Lc,[zeros,ones],self.BICM_int,self.dc.LDPC_decode,self.modem)
+                
         return info,EST_cwd
+    
 
 if FEC==1:
     class Mysystem(Mysystem_Polar):
@@ -215,7 +241,7 @@ elif FEC==3:
 
 if __name__=='__main__':
     K=512 #symbol数
-    M=4
+    M=16
     
     EsNodB=2.0
     print("EsNodB",EsNodB)

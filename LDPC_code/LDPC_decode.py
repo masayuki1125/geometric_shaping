@@ -101,7 +101,7 @@ class decoding():
                 break
             k+=1
         
-        return EST_codeword ,EX_info
+        return EST_codeword ,-1*EX_info#LLRが逆になってしまっているため、マイナスを×
 
     def LDPC_decode(self,Lc):
         #Lcをプラスとマイナス逆にする

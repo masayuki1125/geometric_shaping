@@ -114,7 +114,7 @@ class Modem:
         return res
     
 
-    def __ApproxLLR(self, x, No):
+    def __ApproxLLR(self, x, No, BICM_ID=False):
         """ Calculates approximate Log-likelihood Ratios (LLRs) [1].
         Parameters
         ----------
@@ -125,31 +125,50 @@ class Modem:
         (additional)
         exact=False/True
             using max/min approximation or not
+        BICM_ID: bool
+            if decoder uses BICM_ID, the returns changes
+            self.soft_decision must be True    
+        
         Returns
         -------
         
         result: 1-D ndarray of floats
             Output LLRs.
+            
+        result (BICM_ID=True)
+            1D-list [llr ,euclid_dist]
+            
         Reference:
             [1] Viterbi, A. J., "An Intuitive Justification and a
                 Simplified Implementation of the MAP Decoder for Convolutional Codes,"
                 IEEE Journal on Selected Areas in Communications,
                 vol. 16, No. 2, pp 260–264, Feb. 1998
         """
+        #choose if LLR make exact or max approximation
         exact=True
 
         zeros = self.zeros
         ones = self.ones
         
+        #for BICM_ID,euclid distance 3D-array
+        num_mat=np.zeros((len(ones[0]),len(x),len(ones))) #num==(b=0) denum==(b=1)
+        denum_mat=np.zeros((len(ones[0]),len(x),len(ones))) #縦軸(x軸)は1シンボルあたりの信号点のbit数、横軸はシンボル数
+        
         LLR = []
-        for (zero_i, one_i) in zip(zeros, ones): #iビット目のビットが0のときの信号点と1のときの信号点のリスト
+        for i,(zero_i, one_i) in enumerate(zip(zeros, ones)): #iビット目のビットが0のときの信号点と1のときの信号点のリスト
+            
             num = [((np.real(x) - np.real(z)) ** 2)
                    + ((np.imag(x) - np.imag(z)) ** 2)
-                   for z in zero_i]
+                   for z in zero_i] 
             denum = [((np.real(x) - np.real(o)) ** 2)
                      + ((np.imag(x) - np.imag(o)) ** 2)
                      for o in one_i]
             
+            #for BICM_ID
+            #print("a",len(num))
+            #print(num_mat[i,:].shape)
+            num_mat[:,:,i]=num
+            denum_mat[:,:,i]=denum
             #print(len(zero_i))
 
             if exact==False:
@@ -170,9 +189,13 @@ class Modem:
             
 
         result = np.zeros((len(x) * len(zeros)))
-        for i, llr in enumerate(LLR):
-            result[i::len(zeros)] = llr
-        return result
+        for i, llr_i in enumerate(LLR):
+            result[i::len(zeros)] = llr_i
+        
+        if BICM_ID==True:        
+            return result, [num_mat,denum_mat]
+        else:
+            return result
 
     ''' METHODS TO EXECUTE '''
 
@@ -232,9 +255,16 @@ class Modem:
             Demodulated message (LLRs or binary sequence).
             
         result (BICM_ID=True)
-            1D-list [llr ,euqrid_dist]
+            1D-list [llr ,euclid_dist]
         """
+        # for BICM iterative decoding
+        if BICM_ID==True:
+            if self.soft_decision==False:
+                raise ValueError("the soft decision must be True if BICM_ID is True")
+            llr,euclid_dist = self.__ApproxLLR(x, No ,BICM_ID)
+            return llr,euclid_dist
 
+        #if BICM_ID==False
         if self.soft_decision:
             result = self.__ApproxLLR(x, No)
         else:
@@ -514,9 +544,9 @@ if __name__=='__main__':
     EsNodB=1
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo 
-    M=4
+    M=16
     modem=QAMModem(M)
-    K=6*100
+    K=int(math.log2(M))*100
     MAX_ERR=100
     '''
     for EsNodB in range(0,30):
@@ -549,14 +579,47 @@ if __name__=='__main__':
         print(count_err/count_all)
     '''
     
-    N=256
+    N=K
     print(N)
     info=np.random.randint(0,2,N)
     TX_conste=modem.modulate(info)
     RX_conste=add_AWGN(TX_conste,No)
-    Lc=modem.demodulate(RX_conste,No)
-    print(info)
-    print(Lc)
+    Lc1=modem.demodulate(RX_conste,No,False)
+    Lc2,[zeros,ones]=modem.demodulate(RX_conste,No,True)
+    if np.any(Lc1!=Lc2):
+        print("Lc1 and Lc2 is different")
+    #print(info)
+    #print(Lc2)
+    print(zeros.shape)
+    print(ones.shape)
     
+    #check
     
+    a=modem.calc_exp(zeros,No)
+    b=modem.calc_exp(ones,No)
+    print(a.shape)
+    print(a.ravel().shape)
+    Lc3=(np.transpose(a[0]) - np.transpose(b[0])).ravel(order='F')
+    #print(Lc3)
+    if np.any(Lc2!=Lc3):
+        print("Lc2 and Lc3 is different")
     
+    '''
+    tmp=modem.code_book
+
+    res=np.zeros((len(tmp),int(np.log2(len(tmp)))),dtype='int')
+    for i,bi in enumerate(tmp):
+        tmp=list(bi)
+        print(tmp)
+        for j in range(len(tmp)):
+            res[i,j]=int(tmp[j])
+        print(res[i])
+    
+    res=-1*(2*res-1) #[0,1] to[1,-1]
+    
+    test=np.array([0.3,-0.5])
+    test=test[:,np.newaxis]
+    print(res.T)
+    print(res@test)
+    print(res)
+    '''

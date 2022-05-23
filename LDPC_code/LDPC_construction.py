@@ -16,13 +16,19 @@ class coding():
     #prepere constants
     self.Wc=2
     self.Wr=int(self.Wc/self.R)
+    print((self.Wc,self.Wr))
 
     if (self.Wr-self.Wc)/self.Wr!=self.R:
         print("encoder rate error")
 
     self.H=self.generate_regular_H() 
     
-    self.tG=self.HtotG()#[:,0:self.K]
+    self.tG=self.HtotG()
+    
+    if np.linalg.matrix_rank(self.tG)<self.tG.shape[1]:
+        print("tG is not fullrank1")
+        print(np.linalg.matrix_rank(self.tG))
+    self.tG=self.tG[:,0:self.K]
     
     self.filename="regular_LDPC_code_{}_{}".format(self.N,self.K)
     #check
@@ -31,6 +37,9 @@ class coding():
         print(self.H.shape)
         print(self.tG.shape)
     
+    if np.linalg.matrix_rank(self.tG)<self.tG.shape[1]:
+        print("tG is not fullrank2")
+        print(np.linalg.matrix_rank(self.tG))
     
     
   #interleave N sequence
