@@ -56,33 +56,53 @@ class Mysystem_Polar:
         #filename
         self.filename="polar_code_{}_{}_{}".format(self.N,self.K,self.M)
         self.filename=self.filename+const_name
+        if self.cd.systematic_polar==True:
+            self.filename="systematic_"+self.filename
         
         #BICM or not
         if self.BICM==True:
             #悪いチャネルと良いチャネルを別々にしてみる
-            seq=np.arage(self.N)
-            num_of_channels=int(np.log2(self.M**(1/2)))
-            for i in range(num_of_channels):
-                =seq[i::num_of_channels]
-                odd=seq[]
+            #seq=np.arange(self.N,dtype=int)
             
-            
+            #num_of_channels=int(np.log2(self.M**(1/2)))
+            #res=np.empty(0,dtype=int)
+            #for i in range(num_of_channels):
+                #res=np.concatenate([res,seq[i::num_of_channels]])
+            #self.BICM_int=res
+            #self.BICM_deint=np.argsort(self.BICM_int)
             self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
             self.filename=self.filename+"_BICM"
         
         #output filename to confirm which program I run
         print(self.filename)
-            
-    def main_func(self,EsNodB):
-        #adaptive dicision of frozen bits
-        if self.cd.decoder_ver==2:
-            CRC_len=len(self.cd.CRC_polynomial)-1  
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
-        else:
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
         
+    def adaptive_BICM(self,EsNodB):
+        from capacity_estimation.calc_capacity import make_BMI_list 
+        tmp=make_BMI_list(EsNodB,self.M)
+        seq_of_channels=np.argsort(tmp[:len(tmp)//2])
+        num_of_channels=len(seq_of_channels)
+        #print(seq_of_channels)
+        seq=np.arange(self.N,dtype=int)
+        res=np.empty(0,dtype=int)
+        for i in seq_of_channels:
+            res=np.concatenate([res,seq[i::num_of_channels]])
+        self.BICM_int=res
+        self.BICM_deint=np.argsort(self.BICM_int)
+           
+    def main_func(self,EsNodB):
+        #adaptive change of BICM interleaver
+        #if self.M!=4:
+            #self.adaptive_BICM(EsNodB)
+        
+        #adaptive dicision of frozen bits
+        if self.BICM==False:
+            if self.cd.decoder_ver==2:
+                CRC_len=len(self.cd.CRC_polynomial)-1  
+                frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
+            else:
+                frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
         #if BICM is True:
-        if self.BICM==True:#BICM purmutation
+        elif self.BICM==True:#BICM purmutation
             if self.cd.decoder_ver==2:
                 CRC_len=len(self.cd.CRC_polynomial)-1  
                 frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
@@ -243,7 +263,7 @@ if __name__=='__main__':
     K=512 #symbol数
     M=16
     
-    EsNodB=2.0
+    EsNodB=6.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

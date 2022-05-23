@@ -23,7 +23,6 @@ class coding():
     self.design_SNR=0
     
     #settings
-    self.adaptive_design_SNR=False #default:False
     self.systematic_polar=False #default:false
     self.decoder_ver=2 #0:SC 1:SCL 2:CA_SCL
 
@@ -41,9 +40,6 @@ class coding():
       self.frozen_bits,self.info_bits=self.const.main_const(self.N,self.K+CRC_len,self.design_SNR)
     else:
       self.frozen_bits,self.info_bits=self.const.main_const(self.N,self.K,self.design_SNR)
-    
-    if self.systematic_polar==True:
-      self.filename="systematic_"+self.filename
     
   #reffered to https://dl.acm.org/doi/pdf/10.5555/1074100.1074303
   @staticmethod

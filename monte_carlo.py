@@ -169,12 +169,12 @@ class savetxt():
 if __name__=="__main__":
     K=512
     print("K=",K)
-    
+    mc=MC(K)
     M_list=[256]
     result_ids_array=[]
     
     for M in M_list:
-        mc=MC(K)
+        
         '''
         if M==16:
             mc.EbNodB_start+=5

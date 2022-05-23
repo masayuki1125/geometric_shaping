@@ -36,39 +36,42 @@ class RCA():
         return res
     
     def main_const_unif(self,N,K,design_SNR,M=2):
+        print(N)
+        print(K)
         
         xi=np.zeros(N)
         
         if M==2:
             #print("BPSK")
-            xi[0] = 0.1 * design_SNR / log10(e)#BPSK
-            #gamma=design_SNR
+            gamma=10**(design_SNR/10)#BPSK
             
         else:
             #print("QPSK")
             dmin=(6/(M-1))**(1/2)
-            xi[0] = 0.1 * design_SNR / log10(e) +log(dmin/2) #QPSK(sqrt(2))
+            gamma=10**(design_SNR/10)*dmin/2 #QPSK(sqrt(2))
+            
+        xi[0]=np.log(gamma)
         
         n=int(log2(N))
         #print("loop st")
         for i in range(1,n+1):
-            J=2**(i-1)
+            J = 2**i
             
-            for j in range(0,J):
+            for j in range(0,J//2):
                 #print(j)
                 xi0=xi[j]
                 lambda0=self.calc_lambda(xi0)
                 xi[j]=self.calc_lambda(lambda0+log(2))
-                xi[j+J]=xi0+log(2)
+                xi[j+J//2]=xi0+log(2)
                 #from IPython.core.debugger import Pdb; Pdb().set_trace()
-    
-        tmp=self.indices_of_elements(xi,N)
+
+        tmp=np.argsort(xi)
         frozen_bits=np.sort(tmp[:N-K])
         info_bits=np.sort(tmp[N-K:])
-        
         #bit reversal order
         for i in range(len(frozen_bits)):
             frozen_bits[i]=self.reverse(frozen_bits[i],n)
+            
         frozen_bits=np.sort(frozen_bits)
             
         for i in range(len(info_bits)):
@@ -115,8 +118,8 @@ class RCA():
             #print(tmp)
             for a in range(len(tmp)):
                 tmp[a]=self.calc_J_inv(tmp[a])
+            #print(tmp)
             gamma=np.tile(tmp,N//int(log2(M)))
-            #print(gamma)
  
         xi=log(gamma).astype("float128")
         
@@ -294,14 +297,12 @@ if __name__=="__main__":
     const=RCA()
     const2=Improved_GA()
 
-    a,b=const.main_const(1024,512,1,2)
-    c,d=const.main_const_unif(1024,512,1,2)
+    a,b=const.main_const(8192,4096,4.0,2)
+    c,d=const.main_const_unif(8192,4096,4.0,2)
     
-    e,f=const2.main_const(1024,512,1,2)
+    e,f=const2.main_const(8192,4096,4.0,2)
     
     print(np.sum(a!=c))
-    #print(a)
-    #print(c)
     print(np.sum(b!=d))
     
     print(np.sum(c!=e))
@@ -310,17 +311,22 @@ if __name__=="__main__":
     print(np.sum(a!=e))
     print(np.sum(b!=f))
     
-    for i in range(len(e)):
-        count=0
-        if np.any(e[i]!=a):
+    count=0
+    for i in range(len(a)):
+        if np.any(a[i]==e):
+            pass
+        else:
             count+=1
     
-    print("count",count)
+    print("count a!=e",count)
     
-
-
-# In[ ]:
-
-
-
+    count=0
+    for i in range(len(c)):
+        if np.any(c[i]==e):
+            pass
+        else:
+            count+=1
+    
+    print("count c!=e",count)
+    
 

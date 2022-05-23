@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.join(os.path.dirname('__file__'), '..'))
 
 from modulation.modulation import QAMModem
+from modulation.modulation import PSKModem
 
 
 # In[101]:
@@ -42,20 +43,27 @@ def make_AMI(EsNodB,M):
   
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=10000000
+    count_num=100000
 
     #make info matrices
     info=cp.random.randint(0,M,count_num)
 
     #make constellation
-    modem=QAMModem(M)
-    tmp=modem.code_book
-    symbol=cp.zeros(M,dtype=complex)
-    for i in tmp:
-        symbol[modem.bin2de(i)]=tmp[i]
+    if M!=2:
+        modem=QAMModem(M)
     
+    
+        tmp=modem.code_book
+        symbol=cp.zeros(M,dtype=complex)
+        for i in tmp:
+            symbol[modem.bin2de(i)]=tmp[i]
+        
+    elif M==2:
+        symbol=cp.array([-1,1])
+        
     mat_symbol=cp.tile(symbol,(count_num,1))
     const=cp.take_along_axis(mat_symbol,info[:,None],axis=1)[:,0]
+    
 
     #if cp.any(symbol==const)!=True:
         #print("error")
@@ -73,16 +81,16 @@ def make_AMI(EsNodB,M):
     return res
 
 def make_BMI(EsNodB,M):
-    each_res=True #default:false
+    each_res=False #default:false
     
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=10000000
+    count_num=100000
     if M>=256:
         count_num//=10#変調多値数が大きくなると、計算が重くなるため、カウント回数を減らす
         
     result=0
-    all_count=10**10
+    all_count=count_num
     
     if each_res==True:
         result=np.zeros(int(math.log2(M)))
@@ -199,9 +207,11 @@ def make_BMI_list(EsNodB,M):
 
 # In[104]:
 if __name__=='__main__':
-    SNR_range=np.arange(0,30,0.5)
-    M_list=[256]
     
+    SNR_range=np.arange(-10,20,0.5)
+    M_list=[2]
+    
+    '''
     BMI_list=np.zeros(len(SNR_range))
     for M in M_list:
         for i,EsNodB in enumerate(SNR_range):
@@ -230,7 +240,6 @@ if __name__=='__main__':
             with open(filename,'w') as f:
                 for i in range(len(SNR_range)):
                     print(str(SNR_range[i]),str(BMI_list[i]),file=f)
-    '''
 
 
         
