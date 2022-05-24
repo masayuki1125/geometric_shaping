@@ -50,8 +50,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=15
-        self.EbNodB_end=25
+        self.EbNodB_start=0
+        self.EbNodB_end=20
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -167,7 +167,7 @@ class savetxt():
 
 # In[ ]:
 if __name__=="__main__":
-    K=512
+    K=128
     print("K=",K)
     mc=MC(K)
     M_list=[256]

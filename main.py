@@ -28,9 +28,9 @@ class Mysystem_Polar:
         #make instance
         self.M=M
         self.K=K
-        #self.N=self.K*int(np.log2(self.M))
-        self.N=self.K*2
-        self.BICM=True 
+        self.N=self.K*int(np.log2(self.M))
+        #self.N=self.K*2
+        self.BICM=False 
         const_var=3
         
         #for construction
