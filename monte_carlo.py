@@ -19,8 +19,8 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**2
-    MAX_ERR=1
+    MAX_ALL=5*10**3
+    MAX_ERR=10
     count_bitall=0
     count_biterr=0
     count_all=0
@@ -167,10 +167,10 @@ class savetxt():
 
 # In[ ]:
 if __name__=="__main__":
-    K=128
+    K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[256]
+    M_list=[4,16,256]
     result_ids_array=[]
     
     for M in M_list:

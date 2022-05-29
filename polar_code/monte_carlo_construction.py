@@ -244,7 +244,7 @@ class monte_carlo():
   def output(self,dumped):
     
     # directory make
-    current_directory="/home/kaneko/Dropbox/programming/geometric_shaping/polar_code"
+    current_directory="~/Dropbox/programming/geometric_shaping/polar_code"
     #current_directory=os.getcwd()
     dir_name="monte_carlo_construction"
     dir_name=current_directory+"/"+dir_name
@@ -266,7 +266,7 @@ class monte_carlo():
     
     try:
       c=np.loadtxt(filename)
-    except FileNotFoundError:
+    except (OSError,FileNotFoundError):
       print("make frozen bits!")
       print(filename)
       c=self.make_c(dumped)
@@ -701,8 +701,8 @@ if __name__=="__main__":
     const=monte_carlo()
     print(const.main_const(N,K,EsNodB,M))
     '''
-    N=1024
-    K=512
+    N=4096
+    K=2048
     M_list=[4,16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:

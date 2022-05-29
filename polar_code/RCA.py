@@ -3,9 +3,10 @@
 
 # In[59]:
 
-from numpy import log, log10,log2, exp, sqrt,e
+from numpy import log,log2, exp, sqrt,e
 from numpy import power as pow
 from numpy import log,exp,fabs
+from decimal import Decimal as D
 
 import numpy as np
 import math
@@ -65,6 +66,8 @@ class RCA():
                 xi[j+J//2]=xi0+log(2)
                 #from IPython.core.debugger import Pdb; Pdb().set_trace()
 
+        print(xi)
+
         tmp=np.argsort(xi)
         frozen_bits=np.sort(tmp[:N-K])
         info_bits=np.sort(tmp[N-K:])
@@ -104,13 +107,14 @@ class RCA():
         if M==2:
             #print("BPSK")
             gamma=10**(design_SNR/10)#BPSK
-            gamma=gamma*np.ones(N,dtype="float128")
+            gamma=gamma*np.ones(N)
             
         elif M==4:
+        #else:
             #print("QPSK")
             dmin=(6/(M-1))**(1/2)
             gamma=10**(design_SNR/10)*dmin/2 #QPSK(sqrt(2))
-            gamma=gamma*np.ones(N,dtype="float128")
+            gamma=gamma*np.ones(N)
         
         else:
             #print("multi QAM")
@@ -120,8 +124,15 @@ class RCA():
                 tmp[a]=self.calc_J_inv(tmp[a])
             #print(tmp)
             gamma=np.tile(tmp,N//int(log2(M)))
+            
+            #tmp=np.zeros(len(gamma))
+            #n=int(log2(N))
+            #bit reversal order
+            #for i in range(len(tmp)):
+                #tmp[i]=gamma[self.reverse(i,n)]
+        
  
-        xi=log(gamma).astype("float128")
+        xi=log(gamma)
         
         if BICM==True:
             xi=xi[BICM_deint]
@@ -134,8 +145,9 @@ class RCA():
                        
         n=int(log2(N))
         
+        
         for i in range(0,n):
-            J = 2**(i+1)
+            J = 2**(n-i)
             for k in range(0,int(N/J)):
                 for j in range(0,int(J/2)):
                     xi0 = xi[k * J + j ]
@@ -143,8 +155,36 @@ class RCA():
                     L0 = self.calc_lambda( xi0 )
                     L1 = self.calc_lambda( xi1 )
                     
-                    xi[k * J + j] = self.calc_lambda( max( L0, L1 )  + log( 1.0 + exp( - fabs( L0 - L1 ) ) ) )
-                    xi[k * J + j + int(J/2)] = max( xi0, xi1 ) + log( 1.0 + exp( - fabs( xi0 - xi1 ) ) )
+                    a=log( 1.0 + exp( - fabs( L0 - L1 ) ) )
+                    b=log( 1.0 + exp( - fabs( xi0 - xi1 ) ) )
+                    #a=( D(1.0) + ( - ( D(L0) - D(L1) ).copy_abs() ).exp() ).ln()
+                    #b=( D(1.0) +( - ( D(xi0) - D(xi1) ).copy_abs() ).exp() ).ln()
+                    #a=float(a)
+                    #b=float(b)
+                    
+                    xi[k * J + j] = self.calc_lambda( max( L0, L1 )  + a )
+                    xi[k * J + j + int(J/2)] = max( xi0, xi1 ) + b
+        
+        
+        '''
+        tmp=np.zeros((n+1,N))
+        tmp[0]=gamma
+        for i in range(1,tmp.shape[0]):
+            for j in range(tmp.shape[1]):
+                if (j//2**(n-i))%2==0: #left_operation
+                    xi0=tmp[i-1,j]
+                    xi1=tmp[i-1,j+2**(n-i)]
+                    
+                    L0 = self.calc_lambda( xi0 )
+                    L1 = self.calc_lambda( xi1 )
+                    tmp[i,j]=self.calc_lambda( max( L0, L1 )  + log( 1.0 + exp( - fabs( L0 - L1 ) ) ) )
+        
+                else :#right operation
+                    xi0=tmp[i-1,j]
+                    xi1=tmp[i-1,j-2**(n-i)]
+                    
+                    tmp[i,j]=max( xi0, xi1 ) + log( 1.0 + exp( - fabs( xi0 - xi1 ) ) )                 
+        '''
                     
         #return xi
     
@@ -153,63 +193,64 @@ class RCA():
         info_bits=np.sort(tmp[N-K:])
         
         #bit reversal order
-        for i in range(len(frozen_bits)):
-            frozen_bits[i]=self.reverse(frozen_bits[i],n)
-        frozen_bits=np.sort(frozen_bits)
+        #for i in range(len(frozen_bits)):
+            #frozen_bits[i]=self.reverse(frozen_bits[i],n)
+        #frozen_bits=np.sort(frozen_bits)
             
-        for i in range(len(info_bits)):
-            info_bits[i]=self.reverse(info_bits[i],n)
-        info_bits=np.sort(info_bits)
+        #for i in range(len(info_bits)):
+            #info_bits[i]=self.reverse(info_bits[i],n)
+        #info_bits=np.sort(info_bits)
         
         return frozen_bits,info_bits
-    '''
-    @staticmethod
-    def calc_lambda(xi):
-        Alpha=1.16125
-        Gamma1=0.04
-        Gamma2=1
-        Gamma3=10
-        Xi0=-11.3143
-        C1=0.55523
-        C2=0.721452
-        H21=1.396634
-        H22=0.872764
-        H23=1.148562
-        H31=1.266967
-        H32=0.938175
-        H33=0.986830
-        #first if st
-        if xi<Xi0:
-            B=math.log(2)+2*math.log(math.log(2))+2*math.log(Alpha)-2*xi
-            return math.log(B+(1/B-1)*math.log(B))-math.log(2)
         
-        #first if fin
-        gamma=math.exp(xi)
-        if gamma>Gamma3:
-            return math.log(math.log(2))+math.log(Alpha)-gamma-xi/2
-
-        elif gamma<Gamma1:
-            U=1-(gamma-gamma**2+4/3*gamma**3)/math.log(2)
-
-        elif gamma<Gamma2:
-            U=1-(1-math.exp(-1*H21*(gamma**H22)))**H23
+    @staticmethod
+    def calc_lambda(xi):
+        
+        alpha = 1.16125
+        h21 = 1.396634
+        h22 = 0.872764
+        h23 = 1.148562
+        h31 = 1.266967
+        h32 = 0.938175
+        h33 = 0.986830
+        
+        if( xi < -11.3143 ):
+            B = log( 2.0 ) + 2.0 * log( log( 2.0 ) )+ 2.0 * log( alpha )- 2.0 * xi
+            rt = log( B + ( 1.0 / B - 1.0 ) * log( B ) ) - log( 2.0 )
+            return rt
+        
+        g = exp( xi )
+        if( g > 10.0 ):
+            #return log( log( 2.0 ) ) + log( alpha ) - g - 0.5 * xi
+            a= float(( D(2.0).ln() ).ln() + ( D(alpha) ).ln() - D(g) - D(0.5) * D(xi))
+            return a
+        
+        elif ( g < 0.04 ):
+            L = 1.0 - ( g - pow( g, 2.0 ) + 4.0 / 3.0 * pow( g, 3.0 ) )/ log( 2.0 )
+            #L = float(D(1.0) - ( D(g) - D(g)**2 + D(4.0) / D(3.0) * D(g)**3 )/ D(2.0).ln())
             
+        elif( g < 1.0 ):
+            L = 1.0 - pow( 1.0 - exp( - h21 * pow( g, h22 ) ), h23)
+        else: 
+            L = 1.0 - pow( 1.0 - exp( - h31 * pow( g, h32 ) ), h33)
+        if( L < 0.055523 ):
+            A = pow( -5.0 + 24.0 * log( 2.0 ) * L + 2.0 * sqrt( 13.0 + 12.0 * log(2.0) * L * ( 12.0 * log(2.0) * L - 5.0 ) ), 1.0 / 3.0 )
+            rt = log( 1.0 - 3.0 / A + A ) - 2.0 * log( 2.0 )
+            #A = pow( D(-5.0) + D(24.0) * D(2.0).ln() * D(L) + D(2.0) * sqrt( D(13.0) + D(12.0) * D(2.0).ln() * D(L) * ( D(12.0) * D(2.0).ln() * D(L) - D(5.0) ) ), D(1.0) / D(3.0) )
+            #rt = log( 1.0 - 3.0 / A + A ) - 2.0 * log( 2.0 )
+            return rt
+        elif( L < 0.721452 ):
+            rt = ( log( - log( 1.0 - pow( L, 1.0 / h23 ) ) ) - log( h21 ) ) / h22
+            return rt
         else:
-            U=1-(1-math.exp(-1*H31*(gamma**H32)))*H33
+            rt = ( log( - log( 1.0 - pow( L, 1.0 / h33 ) ) ) - log( h31 ) ) / h32
+            return rt
             
-        if U<C1:
-            A=(-5+24*math.log(2)*U+2*math.sqrt(13+12*math.log(2)*U*(12*math.log(2)*U-5)))**(1/3)
-            return math.log(1-3/A+A)-2*math.log(2)
-            
-        elif U<C2:
-            return (math.log(-1*math.log(1-U**(1/H23)))-math.log(H21))/H22
-
-        else:
-            return (math.log(-1*math.log(1-U**(1/H33)))-math.log(H31))/H32
     '''
     @staticmethod
     def calc_lambda(xi):
-        alpha =  1.16125
+        
+        alpha =  Decimal(1.16125)
         h21 = 1.396634
         h22 = 0.872764
         h23 = 1.148562
@@ -240,8 +281,8 @@ class RCA():
         else:
             rt = ( log( - log( 1.0 - pow( L, 1.0 / h33 ) ) ) - log( h31 ) ) / h32
             return rt
-            
-    
+    '''       
+               
     @staticmethod
     def calc_J_inv(I):
         '''

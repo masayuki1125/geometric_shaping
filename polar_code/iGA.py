@@ -163,9 +163,9 @@ class Improved_GA(Improved_GA):
       #print(dmin/2)
       gamma[0]=4*(10 ** (design_SNR / 10))*(dmin/2)
     
-    for i in range(1,n+1):
-      J=2**(i-1)
-      for j in range(0,J):
+    for i in range(0,n):
+      J=2**(n-i)
+      for j in range(0,J//2):
         u=gamma[j]
         if u<=self.G_0:
           gamma[j]=(u**2)/2-(u**3)/2+2*(u**4)/3
@@ -173,7 +173,7 @@ class Improved_GA(Improved_GA):
           z=self.xi(u)
           gamma[j]=self.xi_inv(z+math.log(2-math.e**z))
         
-        gamma[j+J]=2*u
+        gamma[j+J//2]=2*u
     
     tmp=self.indices_of_elements(gamma,N)
     frozen_bits=np.sort(tmp[:N-K])

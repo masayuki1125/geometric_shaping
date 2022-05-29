@@ -2,6 +2,7 @@ import numpy as np
 import cupy as cp
 import math
 
+
 class encoding():
   def __init__(self,myPC):
     

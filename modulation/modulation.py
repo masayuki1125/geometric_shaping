@@ -1,8 +1,10 @@
+#%%
 import math
 import numpy as np
 import cupy as cp
 import matplotlib.pyplot as plt
 
+#%%
 class Modem:
     def __init__(self, M, gray_map=True, bin_input=True, soft_decision=True, bin_output=True):
 
@@ -491,7 +493,7 @@ class QAMModem(Modem):
                 h = 'center'
             elif abs(x) > 1e-9 and abs(y) < 1e-9:
                 v = 'center'
-            #plt.annotate(i, (x + xadd, y + yadd), ha=h, va=v, size=size)
+            plt.annotate(i, (x + xadd, y + yadd), ha=h, va=v, size=size)
         M = str(self.M)
         if self.gray_map:
             mapping = 'Gray'
@@ -524,8 +526,20 @@ Training
 Blog
 About
 '''
+#%%
 if __name__=='__main__':
     
+
+    modem=QAMModem(16)
+    modem.plot_const()
+    print(modem.ones)
+    info=np.array([0,0,1,1])
+    print(modem.modulate(info))
+    
+    
+#%%
+    
+    '''
     def add_AWGN(constellation,No):
 
         # AWGN雑音の生成
@@ -548,6 +562,8 @@ if __name__=='__main__':
     modem=QAMModem(M)
     K=int(math.log2(M))*100
     MAX_ERR=100
+    '''
+    
     '''
     for EsNodB in range(0,30):
         print(EsNodB)
@@ -578,7 +594,7 @@ if __name__=='__main__':
 
         print(count_err/count_all)
     '''
-    
+    '''
     N=K
     print(N)
     info=np.random.randint(0,2,N)
@@ -603,6 +619,7 @@ if __name__=='__main__':
     #print(Lc3)
     if np.any(Lc2!=Lc3):
         print("Lc2 and Lc3 is different")
+    '''
     
     '''
     tmp=modem.code_book

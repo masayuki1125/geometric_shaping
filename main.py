@@ -28,9 +28,9 @@ class Mysystem_Polar:
         #make instance
         self.M=M
         self.K=K
-        self.N=self.K*int(np.log2(self.M))
-        #self.N=self.K*2
-        self.BICM=False 
+        #self.N=self.K*int(np.log2(self.M))
+        self.N=self.K*2
+        self.BICM=True 
         const_var=3
         
         #for construction
@@ -62,16 +62,16 @@ class Mysystem_Polar:
         #BICM or not
         if self.BICM==True:
             #悪いチャネルと良いチャネルを別々にしてみる
-            #seq=np.arange(self.N,dtype=int)
+            seq=np.arange(self.N,dtype=int)
             
-            #num_of_channels=int(np.log2(self.M**(1/2)))
-            #res=np.empty(0,dtype=int)
-            #for i in range(num_of_channels):
-                #res=np.concatenate([res,seq[i::num_of_channels]])
-            #self.BICM_int=res
-            #self.BICM_deint=np.argsort(self.BICM_int)
-            self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
-            self.filename=self.filename+"_BICM"
+            num_of_channels=int(np.log2(self.M**(1/2)))
+            res=np.empty(0,dtype=int)
+            for i in range(num_of_channels):
+                res=np.concatenate([res,seq[i::num_of_channels]])
+            self.BICM_int=res
+            self.BICM_deint=np.argsort(self.BICM_int)
+            #self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
+            #self.filename=self.filename+"_BICM"
         
         #output filename to confirm which program I run
         print(self.filename)
@@ -91,8 +91,8 @@ class Mysystem_Polar:
            
     def main_func(self,EsNodB):
         #adaptive change of BICM interleaver
-        #if self.M!=4:
-            #self.adaptive_BICM(EsNodB)
+        if self.M!=4:
+            self.adaptive_BICM(EsNodB)
         
         #adaptive dicision of frozen bits
         if self.BICM==False:
@@ -260,10 +260,10 @@ elif FEC==3:
             super().__init__(M,K)  
 
 if __name__=='__main__':
-    K=512 #symbol数
-    M=16
+    K=128 #symbol数
+    M=256
     
-    EsNodB=6.0
+    EsNodB=8.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")
@@ -286,3 +286,4 @@ if __name__=='__main__':
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
     '''
+# %%
