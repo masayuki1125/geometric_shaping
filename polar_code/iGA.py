@@ -146,7 +146,12 @@ class Improved_GA(Improved_GA):
 # In[7]:
 
 class Improved_GA(Improved_GA):
-  def main_const(self,N,K,design_SNR,M=2,**kwargs): #kwargsは使わない
+  def main_const(self,N,K,design_SNR,M=2,**kwargs): 
+    if kwargs.get('soft_output') is not None:
+        soft_output=kwargs.get("soft_output")
+    else:
+        soft_output=False
+      
     bit_reverse=True
         #make n where 2**n=N
     n=np.log2(N).astype(int)
@@ -163,8 +168,9 @@ class Improved_GA(Improved_GA):
       #print(dmin/2)
       gamma[0]=4*(10 ** (design_SNR / 10))*(dmin/2)
     
-    for i in range(0,n):
-      J=2**(n-i)
+    for i in range(1,n+1):
+      J=2**i
+      
       for j in range(0,J//2):
         u=gamma[j]
         if u<=self.G_0:
@@ -174,6 +180,9 @@ class Improved_GA(Improved_GA):
           gamma[j]=self.xi_inv(z+math.log(2-math.e**z))
         
         gamma[j+J//2]=2*u
+    
+    if soft_output==True:
+        return gamma
     
     tmp=self.indices_of_elements(gamma,N)
     frozen_bits=np.sort(tmp[:N-K])

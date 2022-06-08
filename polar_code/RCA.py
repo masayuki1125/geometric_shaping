@@ -100,6 +100,11 @@ class RCA():
         else:
             BICM=False
         
+        if kwargs.get('soft_output') is not None:
+            soft_output=kwargs.get("soft_output")
+        else:
+            soft_output=False
+        
         #check if mapping is the divisor of N
         if N%int(log2(M))!=0:
             print("mapping error")
@@ -136,7 +141,6 @@ class RCA():
         
         if BICM==True:
             xi=xi[BICM_deint]
-            
         
         #check if xi array is length N
         if len(xi)!=N:
@@ -165,7 +169,8 @@ class RCA():
                     xi[k * J + j] = self.calc_lambda( max( L0, L1 )  + a )
                     xi[k * J + j + int(J/2)] = max( xi0, xi1 ) + b
         
-        
+        if soft_output:
+            return xi
         '''
         tmp=np.zeros((n+1,N))
         tmp[0]=gamma

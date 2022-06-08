@@ -14,7 +14,7 @@ class coding():
     
     #regular_LDPC
     #prepere constants
-    self.Wc=2
+    self.Wc=3
     self.Wr=int(self.Wc/self.R)
     print((self.Wc,self.Wr))
 

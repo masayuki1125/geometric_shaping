@@ -19,9 +19,10 @@ from turbo_code import turbo_encode
 from turbo_code import turbo_decode
 from modulation import modulation
 from modulation.BICM import make_BICM
+from modulation.BICM import BICM_ID
 from channel import AWGN
 
-FEC=1 #1:polar code 2:turbo code 3:LDPC code
+FEC=3 #1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):
@@ -30,8 +31,8 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=True 
-        const_var=3
+        self.BICM=False 
+        const_var=2
         
         #for construction
         if const_var==1:
@@ -71,7 +72,7 @@ class Mysystem_Polar:
             self.BICM_int=res
             self.BICM_deint=np.argsort(self.BICM_int)
             #self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
-            #self.filename=self.filename+"_BICM"
+            self.filename=self.filename+"_BICM"
         
         #output filename to confirm which program I run
         print(self.filename)
@@ -190,11 +191,11 @@ class Mysystem_LDPC():
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         self.BICM=True 
-        self.BICM_ID=False
+        self.BICM_ID=True
         
         if self.BICM_ID==True:
             self.BICM=True
-            self.BICM_ID_itr=10
+            self.BICM_ID_itr=5
                 
         #coding
         self.cd=LDPC_construction.coding(self.N,self.K)
@@ -203,7 +204,10 @@ class Mysystem_LDPC():
         #modulation
         self.modem=modulation.QAMModem(self.M)
         
-
+        #BICM_ID
+        if self.BICM_ID==True:
+            self.dmp=BICM_ID(self.modem)
+        
         #channel
         self.ch=AWGN._AWGN()
         
@@ -241,8 +245,23 @@ class Mysystem_LDPC():
             #demodulate      
             Lc,[zeros,ones]=self.modem.demodulate(RX_conste,No,self.BICM_ID)
             
-            #EST_cwd=BICM_ID_decode(Lc,[zeros,ones],self.BICM_int,self.dc.LDPC_decode,self.modem)
-                
+            _,EX_info=self.dc.LDPC_decode(Lc[self.BICM_deint]) #first decoder
+            
+            self.dmp.zeros=zeros
+            self.dmp.ones=ones
+            
+            #main loop
+            count=0
+            while count<self.BICM_ID_itr:
+                count+=1
+                Pre_info=EX_info[self.BICM_int]#順番の入れ替えをして、事前値にする
+                new_Lc=self.dmp.demapper(Pre_info,Lc,No)
+                EST_cwd,EX_info=self.dc.LDPC_decode(new_Lc[self.BICM_deint])
+
+                #print(new_Lc)
+                #print(Lc)
+                #print(EST_cwd) 
+            #print(info)
         return info,EST_cwd
     
 
@@ -260,17 +279,26 @@ elif FEC==3:
             super().__init__(M,K)  
 
 if __name__=='__main__':
-    K=128 #symbol数
+    K=512 #symbol数
     M=256
     
-    EsNodB=8.0
+    EsNodB=16.5
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
-    info,EST_info=system.main_func(EsNodB)
-    print(np.sum(info!=EST_info))
     
+    MAXCNT=10
+    count_err=0
+    count_all=0
+    while count_err<MAXCNT:
+        count_all+=1
+        info,EST_info=system.main_func(EsNodB)
+        print("\r"+str(np.sum(info!=EST_info))+str(count_all)+str(count_err),end="")
+        if np.any(info!=EST_info):
+            count_err+=1
+    print("result")
+    print(count_err/count_all)
     
     '''
     K=4096

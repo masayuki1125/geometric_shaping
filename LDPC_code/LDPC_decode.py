@@ -93,7 +93,7 @@ class decoding():
             ##check operation
             EX_info=L_mat.sum(axis=0)
             EST_Lc=Lc+EX_info
-            EST_codeword=(np.sign(EST_Lc)+1)/2
+            EST_codeword=(np.sign(EST_Lc)+1)/2 #EST_Lc is plus -> 1 EST_Lc is minus ->0 
 
             #convert from matrix class to array class
             EST_codeword=(np.asarray(EST_codeword)).flatten()
@@ -101,7 +101,7 @@ class decoding():
                 break
             k+=1
         
-        return EST_codeword ,-1*EX_info#LLRが逆になってしまっているため、マイナスを×
+        return EST_codeword ,-1*EST_Lc#LLRが逆になってしまっているため、マイナスを×
 
     def LDPC_decode(self,Lc):
         #Lcをプラスとマイナス逆にする

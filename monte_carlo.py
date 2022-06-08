@@ -7,6 +7,19 @@ from main import Mysystem
 ray.init()
 
 @ray.remote
+class TaskCanceler(object):
+    def __init__(self):
+        self.task_canceled = False
+
+    def cancel_task(self):
+        """The driver can call this to cancel the task."""
+        self.task_canceled = True
+
+    def is_task_canceled(self):
+        """The task calls this to check if it is canceled."""
+        return self.task_canceled
+
+@ray.remote
 def output(dumped,EbNodB):
     '''
     #あるSNRで計算結果を出力する関数を作成
@@ -19,7 +32,7 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=5*10**3
+    MAX_ALL=10**3
     MAX_ERR=10
     count_bitall=0
     count_biterr=0
@@ -39,6 +52,9 @@ def output(dumped,EbNodB):
         #calculate bit error rate 
         count_biterr+=np.sum(information!=EST_information)
         count_bitall+=len(information)
+        
+        #if ray.get(task_canceler.is_task_canceled.remote()):
+            #return
 
     return count_err,count_all,count_biterr,count_bitall
 # In[11]:
@@ -51,7 +67,7 @@ class MC():
         self.RX_antenna=1
         self.MAX_ERR=100
         self.EbNodB_start=0
-        self.EbNodB_end=20
+        self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -70,6 +86,8 @@ class MC():
         result_ids=[[] for i in range(len(self.EbNodB_range))]
 
         for i,EbNodB in enumerate(self.EbNodB_range):
+            
+            
             
             for j in range(self.MAX_ERR):
                 #multiprocess    
@@ -91,7 +109,7 @@ class MC():
             BLER=np.zeros(len(self.EbNodB_range))
             BER=np.zeros(len(self.EbNodB_range))
 
-            for j,EbNodB in enumerate(self.EbNodB_range):#i=certain SNR
+            for j,EbNodB in enumerate(self.EbNodB_range):#j=certain SNR
                 
                 #特定のSNRごとに実行する
                 while sum(np.isin(result_ids_array[i][j], tmp_ids)) == len(result_ids_array[i][j]):#j番目のNの、i番目のSNRの計算が終わったら実行
@@ -120,6 +138,8 @@ class MC():
                 
                 if count_err/count_all<10**-5:
                     print("finish")
+                    for obj in result_ids_array[i][j]: #終わったSNRのオブジェクトをすべて終了する
+                        ray.kill(obj)
                     break
             
             #特定のNについて終わったら出力
@@ -137,6 +157,7 @@ class savetxt():
   def __init__(self,M,K):
     self.mysys=Mysystem(M,K)
     self.mc=MC(K)
+    
     '''
     if M==16:
         mc.EbNodB_start+=5
@@ -149,6 +170,13 @@ class savetxt():
     '''
 
   def savetxt(self,BLER,BER):
+    #cut BLER and BER
+    for i in range(len(BLER)):
+        if BLER[i]==0:
+            BLER=BLER[:i]
+            BER=BER[:i]
+            break
+      
     with open(self.mysys.filename,'w') as f:
 
         #print("#N="+str(self.mysis.cd.N),file=f)
@@ -162,7 +190,7 @@ class savetxt():
         #print("#MAX_BLERR="+str(self.mc.MAX_ERR),file=f)
         #print("#construction="+str(self.mysys.const),file=f)
         print("#EsNodB,BLER,BER",file=f)  
-        for i in range(len(self.mc.EbNodB_range)):
+        for i in range(len(BLER)):
             print(str(self.mc.EbNodB_range[i]),str(BLER[i]),str(BER[i]),file=f)
 
 # In[ ]:
@@ -170,7 +198,7 @@ if __name__=="__main__":
     K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[4,16,256]
+    M_list=[4]
     result_ids_array=[]
     
     for M in M_list:

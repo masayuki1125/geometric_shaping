@@ -244,7 +244,8 @@ class monte_carlo():
   def output(self,dumped):
     
     # directory make
-    current_directory="~/Dropbox/programming/geometric_shaping/polar_code"
+    home=os.environ['HOME']
+    current_directory=home+"/Dropbox/programming/geometric_shaping/polar_code"
     #current_directory=os.getcwd()
     dir_name="monte_carlo_construction"
     dir_name=current_directory+"/"+dir_name
@@ -252,9 +253,11 @@ class monte_carlo():
     try:
       os.makedirs(dir_name)
     except FileExistsError:
+      print("file exists!")
       pass
     
     const=pickle.loads(dumped)
+    
       
     filename="{}QAM_{}_{}".format(const.M,const.N,const.design_SNR)
     
@@ -701,10 +704,10 @@ if __name__=="__main__":
     const=monte_carlo()
     print(const.main_const(N,K,EsNodB,M))
     '''
-    N=4096
-    K=2048
-    M_list=[4,16,256]
-    EsNodB_list=np.arange(0,10,0.5)
+    N=4096*4
+    K=2048*4
+    M_list=[256]
+    EsNodB_list=np.arange(7.5,10,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
             if M==16:
