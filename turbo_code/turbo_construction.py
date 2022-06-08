@@ -54,8 +54,8 @@ class conv_code(conv_code):
     otherwise.
     '''
     #return log_map
-    #return max(eggs, spam) + (0 if max_log else math.log(1 + math.exp(-abs(spam - eggs))))
-    return math.log(1 + math.exp(-abs(spam - eggs)))
+    return max(eggs, spam) #+ (0 if max_log else math.log(1 + math.exp(-abs(spam - eggs))))
+    #return math.log(1 + math.exp(-abs(spam - eggs)))
 
 # In[107]:
 

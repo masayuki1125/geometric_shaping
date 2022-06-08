@@ -139,7 +139,8 @@ class MC():
                 if count_err/count_all<10**-5:
                     print("finish")
                     for obj in result_ids_array[i][j]: #終わったSNRのオブジェクトをすべて終了する
-                        ray.kill(obj)
+                        #print(obj)
+                        del obj
                     break
             
             #特定のNについて終わったら出力
@@ -198,7 +199,7 @@ if __name__=="__main__":
     K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[4]
+    M_list=[256]
     result_ids_array=[]
     
     for M in M_list:

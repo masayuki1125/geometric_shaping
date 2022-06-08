@@ -22,7 +22,7 @@ from modulation.BICM import make_BICM
 from modulation.BICM import BICM_ID
 from channel import AWGN
 
-FEC=3 #1:polar code 2:turbo code 3:LDPC code
+FEC=1 #1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):
@@ -146,7 +146,7 @@ class Mysystem_Turbo():
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=True 
+        self.BICM=False 
         
         #coding
         self.cd=turbo_construction.coding(self.N,self.K)
@@ -280,7 +280,7 @@ elif FEC==3:
 
 if __name__=='__main__':
     K=512 #symbol数
-    M=256
+    M=4
     
     EsNodB=16.5
     print("EsNodB",EsNodB)
