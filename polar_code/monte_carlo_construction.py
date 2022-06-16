@@ -253,7 +253,7 @@ class monte_carlo():
     try:
       os.makedirs(dir_name)
     except FileExistsError:
-      print("file exists!")
+      #print("file exists!")
       pass
     
     const=pickle.loads(dumped)
