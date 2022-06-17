@@ -7,8 +7,8 @@ import itertools
 import multiprocessing
 
 a=multiprocessing.cpu_count()
-ray.init(num_cpus=a*6//10)
-
+#ray.init(num_cpus=a*6//10)
+ray.init()
 @ray.remote
 class TaskCanceler(object):
     def __init__(self):
@@ -35,7 +35,7 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**3
+    MAX_ALL=10**2
     MAX_ERR=10
     count_bitall=0
     count_biterr=0
@@ -69,7 +69,7 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=14
+        self.EbNodB_start=16
         self.EbNodB_end=20
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
@@ -150,8 +150,8 @@ class MC():
                     break
                         
             #特定のNについて終わったら出力
-            #st=savetxt(M,self.K)
-            #st.savetxt(BLER,BER)
+            st=savetxt(M,self.K)
+            st.savetxt(BLER,BER)
 # In[ ]:
 
 

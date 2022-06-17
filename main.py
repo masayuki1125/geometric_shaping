@@ -31,8 +31,8 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=False 
-        const_var=2
+        self.BICM=True 
+        const_var=3
         
         #for construction
         if const_var==1:
@@ -281,7 +281,7 @@ elif FEC==3:
 if __name__=='__main__':
     K=512 #symbol数
     M=4
-    
+    '''
     EsNodB=16.5
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
@@ -299,19 +299,19 @@ if __name__=='__main__':
             count_err+=1
     print("result")
     print(count_err/count_all)
-    
     '''
-    K=4096
-    M_list=[4,16,256]
+    
+    K=512
+    M_list=[16,256]
     EsNodB_list=np.arange(0,10,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
             if M==16:
                 EsNodB+=5
             elif M==256:
-                EsNodB+=10
+                EsNodB+=12
             mysys=Mysystem(M,K)  
-            const=monte_carlo_construction.monte_carlo()
-            const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
-    '''
+            mysys.main_func(EsNodB)
+            #const=monte_carlo_construction.monte_carlo()
+            #const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
 # %%

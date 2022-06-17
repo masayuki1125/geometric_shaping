@@ -704,16 +704,16 @@ if __name__=="__main__":
     const=monte_carlo()
     print(const.main_const(N,K,EsNodB,M))
     '''
-    N=4096*4
-    K=2048*4
+    N=4096
+    K=2048
     M_list=[256]
-    EsNodB_list=np.arange(7.5,10,0.5)
+    EsNodB_list=np.arange(7.5,20,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
-            if M==16:
-                EsNodB+=5
-            elif M==256:
-                EsNodB+=5 
+            #if M==16:
+                #EsNodB+=5
+            #elif M==256:
+                #EsNodB+=5
             const=monte_carlo()
             const.main_const(N,K,EsNodB,M)    
     
