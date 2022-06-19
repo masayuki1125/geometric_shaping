@@ -31,7 +31,7 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=True 
+        self.BICM=False 
         const_var=3
         
         #for construction
