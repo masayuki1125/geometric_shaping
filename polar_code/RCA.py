@@ -290,37 +290,89 @@ class RCA():
                
     @staticmethod
     def calc_J_inv(I):
-        '''
-        input:
-        I:mutual information
-        output:
-        gamma:channel SNR Es/No
-        ----
-        referrence:
-        POLAR CODES FOR ERROR CORRECTION:
-        ANALYSIS AND DECODING ALGORITHMS
-        p37
-        (4.5)
-        '''
-        if I>1 or I<0:
-            print("I is err")
-        
-        a1=1.09542
-        b1=0.214217
-        c1=2.33727
-        a2=0.706692
-        b2=0.386013
-        c2=-1.75017
-        I_thresh=0.3646
-        
-        if I<I_thresh:
-            sigma=a1*I**2+b1*I+c1*I**(1/2)
-        else:
-            sigma=-a2*np.log(b2*(1-I))-c2*I
+        var=2
+        if var==1:
+            '''
+            input:
+            I:mutual information
+            output:
+            gamma:channel SNR Es/No
+            ----
+            referrence:
+            POLAR CODES FOR ERROR CORRECTION:
+            ANALYSIS AND DECODING ALGORITHMS
+            p37
+            (4.5)
+            '''
+            if I>1 or I<0:
+                print("I is err")
             
-        gamma=sigma**2/8
-        #gamma_dB=10*math.log10(gamma)
-        return gamma
+            a1=1.09542
+            b1=0.214217
+            c1=2.33727
+            a2=0.706692
+            b2=0.386013
+            c2=-1.75017
+            I_thresh=0.3646
+            
+            if I<I_thresh:
+                sigma=a1*I**2+b1*I+c1*I**(1/2)
+            else:
+                sigma=-a2*np.log(b2*(1-I))-c2*I
+                
+            gamma=sigma**2/8
+            #gamma_dB=10*math.log10(gamma)
+            return gamma
+        
+        elif var==2:
+            def A(c):
+                return (-5+24*np.log(2)*c+2*(13+12*np.log(2)*c*(12*np.log(2)*c-5))**(1/2))**(1/3)
+        
+            def W0(x):
+                '''
+                Lambert W function
+                reference:
+                On the lambert W function
+                (3.1)
+                '''
+                def a(n):
+                    ((-n)**(n-1)/np.math.factorial(n))*x**n
+                    
+                    
+                res=0
+                for i in range(100):
+                    res+=a(i)
+                return res
+            
+            if I>1 or I<0:
+                print("I is err")
+                    
+            #print("use new funcß")   
+            C1=0.055523
+            C2=0.721452
+            C3=0.999983
+            H21=1.396634
+            H22=0.872764
+            H23=1.148562
+            H31=1.266967
+            H32=0.938175
+            H33=0.986830
+            alpha=1.16125
+            
+            if I<C1:
+                gamma=1/4*(1-3/A(I)+A(I))
+                
+            elif I<C2:
+                gamma=(-1/H21*np.log(1-I**(1/H23)))**(1/H22)
+                
+            elif I<C3:
+                gamma=(-1/H31*np.log(1-I**(1/H33)))**(1/H32)
+            
+            else:
+                gamma=1/2*W0(2*(alpha/(1-I))**2)
+            
+            return gamma
+        
 
 
 # In[64]:

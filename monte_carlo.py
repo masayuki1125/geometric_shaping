@@ -7,8 +7,8 @@ import itertools
 import multiprocessing
 
 a=multiprocessing.cpu_count()
-#ray.init(num_cpus=a*6//10)
-ray.init()
+ray.init(num_cpus=a*6//10)
+#ray.init()
 @ray.remote
 class TaskCanceler(object):
     def __init__(self):
@@ -69,8 +69,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=12
-        self.EbNodB_end=16
+        self.EbNodB_start=0
+        self.EbNodB_end=4
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -229,4 +229,4 @@ def monte_carlo(M,K):
     mc.monte_carlo_calc(result_ids_array,M_list)
   
 if __name__=="__main__":
-    monte_carlo(256,2048)  
+    monte_carlo(4,512)  

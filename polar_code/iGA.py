@@ -26,11 +26,6 @@ class Improved_GA():
     self.Z_1=self.xi(self.G_1)
     self.Z_2=self.xi(self.G_2)
 
-
-# In[4]:
-
-
-class Improved_GA(Improved_GA):
   def reverse(self,index,n):
     '''
     make n into bit reversal order
@@ -40,11 +35,6 @@ class Improved_GA(Improved_GA):
     res=int(tmp,2) 
     return res
 
-
-# In[5]:
-
-
-class Improved_GA(Improved_GA):
   def xi(self,gamma):
 
     if gamma<=self.G_0:
@@ -86,11 +76,6 @@ class Improved_GA(Improved_GA):
 
     return gamma
 
-
-# In[6]:
-
-
-class Improved_GA(Improved_GA):
   def bisection_method(self,zeta):
 
     #set constant
@@ -142,44 +127,44 @@ class Improved_GA(Improved_GA):
 
     return gamma
 
-
-# In[7]:
-
-class Improved_GA(Improved_GA):
   def main_const(self,N,K,design_SNR,M=2,**kwargs): 
     if kwargs.get('soft_output') is not None:
         soft_output=kwargs.get("soft_output")
     else:
         soft_output=False
       
-    bit_reverse=True
         #make n where 2**n=N
     n=np.log2(N).astype(int)
     
-    gamma=np.zeros(N)
+    gamma=np.ones(N)
      
      
     if M==2:
-      gamma[0]=4*(10 ** (design_SNR / 10)) #mean of LLR when transmit all 0
+      gamma=gamma*4*(10 ** (design_SNR / 10)) #mean of LLR when transmit all 0
     else:
       #print(M)
       dmin=(6/(M-1))**(1/2)
       #dmin=1
       #print(dmin/2)
-      gamma[0]=4*(10 ** (design_SNR / 10))*(dmin/2)
-    
-    for i in range(1,n+1):
-      J=2**i
-      
-      for j in range(0,J//2):
-        u=gamma[j]
-        if u<=self.G_0:
-          gamma[j]=(u**2)/2-(u**3)/2+2*(u**4)/3
-        else:
-          z=self.xi(u)
-          gamma[j]=self.xi_inv(z+math.log(2-math.e**z))
+      gamma=gamma*4*(10 ** (design_SNR / 10))*(dmin/2)
         
-        gamma[j+J//2]=2*u
+    for i in range(0,n):
+        J = 2**(n-i)
+        for k in range(0,int(N/J)):
+            #import pdb; pdb.set_trace()
+            for j in range(0,int(J/2)):
+                u1 = gamma[k * J + j ]
+                u2 = gamma[k * J + j + int(J/2) ]:
+
+                if u1<=self.G_0 and u1<=self.G_1:
+                    res=1/2*u1*u2-1/4*u1*u2**2-1/4*u1**2*u2+5/24*u1*u2**3+1/4*u1**2*u2**2+5/24*u1**3*u2
+                else:
+                    z1=self.xi(u1)
+                    z2=self.xi(u2)
+                    res=self.xi_inv(z+math.log(2-math.e**z))
+                    
+                gamma[k * J + j] = res
+                gamma[k * J + j + int(J/2)] = u1+u2
     
     if soft_output==True:
         return gamma
@@ -188,14 +173,6 @@ class Improved_GA(Improved_GA):
     frozen_bits=np.sort(tmp[:N-K])
     info_bits=np.sort(tmp[N-K:])
     
-    #bit reverse permutation
-    if bit_reverse==True:
-      for i in range(len(frozen_bits)):
-        frozen_bits[i]=self.reverse(frozen_bits[i],n)
-      frozen_bits=np.sort(frozen_bits)
-      for i in range(len(info_bits)):
-        info_bits[i]=self.reverse(info_bits[i],n)
-      info_bits=np.sort(info_bits)
     return frozen_bits,info_bits
 
   @staticmethod
@@ -204,21 +181,12 @@ class Improved_GA(Improved_GA):
     res=tmp[0:l]
     return res
 
-
-# In[8]:
-
-
-class Improved_GA(Improved_GA):
-  def maxstr(self,a,b):
+  @staticmethod
+  def maxstr(a,b):
     def f(c):
       return np.log(1+np.exp(-1*c))
     return max(a,b)+f(abs(a-b))
 
-
-# In[9]:
-
-
-class Improved_GA(Improved_GA):
   def left_operation(self,gamma1,gamma2):
 
     #calc zeta
