@@ -24,7 +24,7 @@ class coding():
     
     #settings
     self.systematic_polar=False #default:false
-    self.decoder_ver=0 #0:SC 1:SCL 2:CA_SCL
+    self.decoder_ver=2 #0:SC 1:SCL 2:CA_SCL
     self.bit_reversal_sequence=self.reverse_bits()
 
     #for encoder (CRC poly)

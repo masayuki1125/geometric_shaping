@@ -35,7 +35,7 @@ class Mysystem_Polar:
         const_var=2 #1:MC 2:iGA 3:RCA
         
         ##provisional const
-        self.type=1 #1:No intlv 2:rand intlv 3:Block intlv 4:rand+Block intlv
+        self.type=2 #1:No intlv 2:rand intlv 3:Block intlv 4:rand+Block intlv
         if self.type==1:
             self.BICM=False
         elif self.type==2:

@@ -211,7 +211,7 @@ class Improved_GA():
                     z1=self.xi(u1)
                     z2=self.xi(u2)
                     
-                    #a=self.maxstr(z1,z2)
+                    #a=max(z1,z2)+np.log(1+np.exp(-1*abs(z1-z2)))
                     #b=z1+z2
                     #if a<b:
                         #print("false const")
