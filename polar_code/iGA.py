@@ -247,7 +247,7 @@ class Improved_GA():
 
   @staticmethod
   def calc_J_inv(I):
-    var=1
+    var=2
     if var==1:
         '''
         input:
