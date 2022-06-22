@@ -32,7 +32,18 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         self.BICM=False 
-        const_var=2
+        const_var=2 #1:MC 2:iGA 3:RCA
+        
+        ##provisional const
+        self.type=1 #1:No intlv 2:rand intlv 3:Block intlv 4:rand+Block intlv
+        if self.type==1:
+            self.BICM=False
+        elif self.type==2:
+            self.BICM=True
+        elif self.type==3:
+            self.BICM=True
+        elif self.type==4:
+            self.BICM=True
         
         #for construction
         if const_var==1:
@@ -63,16 +74,23 @@ class Mysystem_Polar:
         #BICM or not
         if self.BICM==True:
             #悪いチャネルと良いチャネルを別々にしてみる
-            seq=np.arange(self.N,dtype=int)
-            
-            num_of_channels=int(np.log2(self.M**(1/2)))
-            res=np.empty(0,dtype=int)
-            for i in range(num_of_channels):
-                res=np.concatenate([res,seq[i::num_of_channels]])
-            self.BICM_int=res
-            self.BICM_deint=np.argsort(self.BICM_int)
-            #self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
+            if self.type==3:
+                seq=np.arange(self.N,dtype=int)
+                
+                num_of_channels=int(np.log2(self.M**(1/2)))
+                res=np.empty(0,dtype=int)
+                for i in range(num_of_channels):
+                    res=np.concatenate([res,seq[i::num_of_channels]])
+                self.BICM_int=res
+                self.BICM_deint=np.argsort(self.BICM_int)
+                
+            if self.type==2:
+                self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
+                
             self.filename=self.filename+"_BICM"
+            
+        #provisional
+        self.filename+="_{}".format(self.type)
         
         #output filename to confirm which program I run
         print(self.filename)
@@ -88,12 +106,14 @@ class Mysystem_Polar:
         for i in seq_of_channels:
             res=np.concatenate([res,seq[i::num_of_channels]])
         self.BICM_int=res
+        #print(self.BICM_int)
         self.BICM_deint=np.argsort(self.BICM_int)
            
     def main_func(self,EsNodB):
         #adaptive change of BICM interleaver
         if self.M!=4:
-            self.adaptive_BICM(EsNodB)
+            if self.type==3:
+                self.adaptive_BICM(EsNodB)
         
         #adaptive dicision of frozen bits
         if self.BICM==False:
@@ -280,15 +300,15 @@ elif FEC==3:
 
 if __name__=='__main__':
     K=512 #symbol数
-    M=4
-    '''
-    EsNodB=16.5
+    M=16
+    
+    EsNodB=10.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
     
-    MAXCNT=10
+    MAXCNT=1
     count_err=0
     count_all=0
     while count_err<MAXCNT:
@@ -299,8 +319,8 @@ if __name__=='__main__':
             count_err+=1
     print("result")
     print(count_err/count_all)
-    '''
     
+    '''
     K=512
     M_list=[16,256]
     EsNodB_list=np.arange(0,10,0.5)
@@ -313,5 +333,6 @@ if __name__=='__main__':
             mysys=Mysystem(M,K)  
             mysys.main_func(EsNodB)
             #const=monte_carlo_construction.monte_carlo()
-            #const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)    
+            #const.main_const(mysys.N,mysys.K,EsNodB,mysys.M)   
+    '''
 # %%
