@@ -32,7 +32,7 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         self.BICM=False 
-        const_var=2 #1:MC 2:iGA 3:RCA
+        const_var=3 #1:MC 2:iGA 3:RCA
         
         ##provisional const
         self.type=1 #1:No intlv 2:rand intlv 3:Block intlv 4:separated scheme
@@ -96,17 +96,21 @@ class Mysystem_Polar:
         print(self.filename)
         
     def adaptive_BICM(self,EsNodB):
+        #block interleaver
         from capacity_estimation.calc_capacity import make_BMI_list 
         tmp=make_BMI_list(EsNodB,self.M)
+        #print(tmp)
         seq_of_channels=np.argsort(tmp[:len(tmp)//2])
-        num_of_channels=len(seq_of_channels)
         #print(seq_of_channels)
+        num_of_channels=len(seq_of_channels)
+        
         seq=np.arange(self.N,dtype=int)
-        res=np.empty(0,dtype=int)
-        for i in seq_of_channels:
-            res=np.concatenate([res,seq[i::num_of_channels]])
-        self.BICM_int=res
-        #print(self.BICM_int)
+        seq=np.reshape(seq,[num_of_channels,-1],order='C')
+        seq=seq[seq_of_channels,:]
+        seq=np.ravel(seq,order='F')
+        #print(seq)
+        #print(seq_of_channels)
+        self.BICM_int=seq
         self.BICM_deint=np.argsort(self.BICM_int)
            
     def main_func(self,EsNodB):

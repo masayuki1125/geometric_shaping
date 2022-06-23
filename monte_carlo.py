@@ -2,13 +2,13 @@ import ray
 import pickle
 import sys
 import numpy as np
-from main import Mysystem
+from main_sep import Mysystem
 import itertools
 import multiprocessing
 
 a=multiprocessing.cpu_count()
-#ray.init(num_cpus=a*6//10)
-ray.init()
+#ray.init(num_cpus=a*7//10)
+#ray.init()
 @ray.remote
 class TaskCanceler(object):
     def __init__(self):
@@ -69,8 +69,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=14
-        self.EbNodB_end=20
+        self.EbNodB_start=16
+        self.EbNodB_end=24
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力

@@ -239,6 +239,117 @@ class Improved_GA():
     
     return frozen_bits,info_bits
 
+  def main_const_sep(self,N,K,design_SNR,M=2,**kwargs): 
+    
+    '''
+    input:
+    N:codeword length
+    K:info length
+    design_SNR target EsNo dB
+    M:modulation order
+    '''
+    #extract from dictionary 
+    if kwargs.get('BICM_int') is not None:
+        BICM_int=kwargs.get("BICM_int")
+        BICM_deint=np.argsort(BICM_int)
+        BICM=True
+    else:
+        BICM=False
+    
+    if kwargs.get('soft_output') is not None:
+        soft_output=kwargs.get("soft_output")
+    else:
+        soft_output=False
+    
+    #check if mapping is the divisor of N
+    if N%int(np.log2(M))!=0:
+        print("mapping error")
+     
+    if M==2:
+      gamma=np.ones(N)
+      gamma=gamma*4*(10 ** (design_SNR / 10)) #mean of LLR when transmit all 0
+    elif M==4:
+      #print(M)
+      dmin=(6/(M-1))**(1/2)
+      #dmin=1
+      #print(dmin/2)
+      gamma=np.ones(N)
+      gamma=gamma*4*(10 ** (design_SNR / 10))*(dmin/2)
+    else:
+      #print("multi QAM")
+      tmp=make_BMI_list(design_SNR,M)
+      #print(tmp)
+      for a in range(len(tmp)):
+        tmp[a]=4*self.calc_J_inv(tmp[a])
+      #print(tmp)
+      gamma=np.tile(tmp,N//int(np.log2(M)))
+    
+    if BICM==True:
+        gamma=gamma[BICM_deint]
+            
+    #tmp=np.zeros(len(gamma))
+    #n=int(log2(N))
+    #bit reversal order
+    #for i in range(len(tmp)):
+        #tmp[i]=gamma[self.reverse(i,n)] 
+        
+    num_of_ch= int(np.log2(M**(1/2)))
+    
+    n=int(np.log2(N))
+    for i in range(num_of_ch-1,n):
+        J = 2**(n-i)
+        for k in range(0,int(N/J)):
+            #import pdb; pdb.set_trace()
+            for j in range(0,int(J/2)):
+                u1 = gamma[k * J + j ]
+                u2 = gamma[k * J + j + int(J/2) ]
+                #if u1!=u2:
+                    #print("u1 not equal u2")
+
+                if u1<=self.G_0 and u1<=self.G_1:
+                    #es=(u1**2)/2-(u1**3)/2+2*(u1**4)/3
+                    #res=1/2*u1**2-1/2*u1**3+2/3*u1**4
+                    res=1/2*u1*u2-1/4*u1*u2**2-1/4*u1**2*u2+5/24*u1*u2**3+1/4*u1**2*u2**2+5/24*u1**3*u2
+                else:
+                    '''
+                    calc
+                    a=max_str(z1,z2)
+                    b=z1+z2
+                    and calc
+                    ln(exp(a)-exp(b))
+                    (a must be greater than b)
+                    '''
+                    z1=self.xi(u1)
+                    z2=self.xi(u2)
+                    
+                    #a=max(z1,z2)+np.log(1+np.exp(-1*abs(z1-z2)))
+                    #b=z1+z2
+                    #if a<b:
+                        #print("false const")
+                    #c=a+np.log(1-np.exp(b-a))
+                    c=np.log(np.exp(z1)+np.exp(z2)-np.exp(z1+z2))
+                    #print(c)
+                    if c>0:
+                        print("c is plus err")
+                    if np.isnan(c):
+                        print("nan err")
+                        
+                    res=self.xi_inv(c)
+                    
+                gamma[k * J + j] = res
+                gamma[k * J + j + int(J/2)] = u1+u2
+    
+    
+    
+    if soft_output==True:
+        return gamma
+    
+    tmp=self.indices_of_elements(gamma,N)
+    frozen_bits=np.sort(tmp[:N-K])
+    info_bits=np.sort(tmp[N-K:])
+    
+    return frozen_bits,info_bits
+
   @staticmethod
   def indices_of_elements(v,l):
     tmp=np.argsort(v)

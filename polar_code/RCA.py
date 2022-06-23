@@ -149,7 +149,6 @@ class RCA():
                        
         n=int(log2(N))
         
-        
         for i in range(0,n):
             J = 2**(n-i)
             for k in range(0,int(N/J)):
@@ -197,16 +196,125 @@ class RCA():
         frozen_bits=np.sort(tmp[:N-K])
         info_bits=np.sort(tmp[N-K:])
         
-        #bit reversal order
-        #for i in range(len(frozen_bits)):
-            #frozen_bits[i]=self.reverse(frozen_bits[i],n)
-        #frozen_bits=np.sort(frozen_bits)
+        return frozen_bits,info_bits
+    
+    def main_const_sep(self,N,K,design_SNR,M=2,**kwargs):
+        
+        '''
+        input:
+        N:codeword length
+        K:info length
+        design_SNR target EsNo dB
+        M:modulation order
+        '''
+        #extract from dictionary 
+        if kwargs.get('BICM_int') is not None:
+            BICM_int=kwargs.get("BICM_int")
+            BICM_deint=np.argsort(BICM_int)
+            BICM=True
+        else:
+            BICM=False
+        
+        if kwargs.get('soft_output') is not None:
+            soft_output=kwargs.get("soft_output")
+        else:
+            soft_output=False
+        
+        #check if mapping is the divisor of N
+        if N%int(log2(M))!=0:
+            print("mapping error")
+        
+        if M==2:
+            #print("BPSK")
+            gamma=10**(design_SNR/10)#BPSK
+            gamma=gamma*np.ones(N)
             
-        #for i in range(len(info_bits)):
-            #info_bits[i]=self.reverse(info_bits[i],n)
-        #info_bits=np.sort(info_bits)
+        elif M==4:
+        #else:
+            #print("QPSK")
+            dmin=(6/(M-1))**(1/2)
+            gamma=10**(design_SNR/10)*dmin/2 #QPSK(sqrt(2))
+            gamma=gamma*np.ones(N)
+        
+        else:
+            #print("multi QAM")
+            tmp=make_BMI_list(design_SNR,M)
+            #print(tmp)
+            for a in range(len(tmp)):
+                tmp[a]=self.calc_J_inv(tmp[a])
+            #print(tmp)
+            gamma=np.tile(tmp,N//int(log2(M)))
+            
+            #tmp=np.zeros(len(gamma))
+            #n=int(log2(N))
+            #bit reversal order
+            #for i in range(len(tmp)):
+                #tmp[i]=gamma[self.reverse(i,n)]
+        
+ 
+        xi=log(gamma)
+        
+        if BICM==True:
+            xi=xi[BICM_deint]
+        
+        #check if xi array is length N
+        if len(xi)!=N:
+            print("xi length error!")
+            print(len(xi))
+                       
+        n=int(log2(N))
+        
+        num_of_ch=int(np.log2(M**(1/2)))
+        
+        for i in range(num_of_ch-1,n):
+            J = 2**(n-i)
+            for k in range(0,int(N/J)):
+                for j in range(0,int(J/2)):
+                    xi0 = xi[k * J + j ]
+                    xi1 = xi[k * J + j + int(J/2) ]
+                    L0 = self.calc_lambda( xi0 )
+                    L1 = self.calc_lambda( xi1 )
+                    
+                    a=log( 1.0 + exp( - fabs( L0 - L1 ) ) )
+                    b=log( 1.0 + exp( - fabs( xi0 - xi1 ) ) )
+                    #a=( D(1.0) + ( - ( D(L0) - D(L1) ).copy_abs() ).exp() ).ln()
+                    #b=( D(1.0) +( - ( D(xi0) - D(xi1) ).copy_abs() ).exp() ).ln()
+                    #a=float(a)
+                    #b=float(b)
+                    
+                    xi[k * J + j] = self.calc_lambda( max( L0, L1 )  + a )
+                    xi[k * J + j + int(J/2)] = max( xi0, xi1 ) + b
+        
+        if soft_output:
+            return xi
+        '''
+        tmp=np.zeros((n+1,N))
+        tmp[0]=gamma
+        for i in range(1,tmp.shape[0]):
+            for j in range(tmp.shape[1]):
+                if (j//2**(n-i))%2==0: #left_operation
+                    xi0=tmp[i-1,j]
+                    xi1=tmp[i-1,j+2**(n-i)]
+                    
+                    L0 = self.calc_lambda( xi0 )
+                    L1 = self.calc_lambda( xi1 )
+                    tmp[i,j]=self.calc_lambda( max( L0, L1 )  + log( 1.0 + exp( - fabs( L0 - L1 ) ) ) )
+        
+                else :#right operation
+                    xi0=tmp[i-1,j]
+                    xi1=tmp[i-1,j-2**(n-i)]
+                    
+                    tmp[i,j]=max( xi0, xi1 ) + log( 1.0 + exp( - fabs( xi0 - xi1 ) ) )                 
+        '''
+                    
+        #return xi
+    
+        tmp=self.indices_of_elements(xi,N)
+        frozen_bits=np.sort(tmp[:N-K])
+        info_bits=np.sort(tmp[N-K:])
         
         return frozen_bits,info_bits
+        
         
     @staticmethod
     def calc_lambda(xi):
@@ -290,7 +398,7 @@ class RCA():
                
     @staticmethod
     def calc_J_inv(I):
-        var=2
+        var=1
         if var==1:
             '''
             input:
@@ -336,7 +444,7 @@ class RCA():
                 (3.1)
                 '''
                 def a(n):
-                    ((-n)**(n-1)/np.math.factorial(n))*x**n
+                   return ((-n)**(n-1)/np.math.factorial(n))*x**n
                     
                     
                 res=0
