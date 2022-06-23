@@ -69,8 +69,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=16
-        self.EbNodB_end=24
+        self.EbNodB_start=5
+        self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -229,4 +229,4 @@ def monte_carlo(M,K):
     mc.monte_carlo_calc(result_ids_array,M_list)
   
 if __name__=="__main__":
-    monte_carlo(256,512)  
+    monte_carlo(16,512)  
