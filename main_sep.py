@@ -29,7 +29,7 @@ class Mysystem:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         self.BICM=True
-        const_var=2 #1:MC 2:iGA 3:RCA
+        const_var=3 #1:MC 2:iGA 3:RCA
         
         ##provisional const
         self.type=4 #1:No intlv 2:rand intlv 3:Block intlv 4:separated scheme
