@@ -66,7 +66,7 @@ class Mysystem_Polar:
         self.ch=AWGN._AWGN()
         
         #filename
-        self.filename="ex_polar_code_{}_{}_{}_CASCL".format(self.N,self.K,self.M)
+        self.filename="polar_code_{}_{}_{}".format(self.N,self.K,self.M)
         self.filename=self.filename+const_name
         if self.cd.systematic_polar==True:
             self.filename="systematic_"+self.filename
@@ -96,17 +96,44 @@ class Mysystem_Polar:
         print(self.filename)
         
     def adaptive_BICM(self,EsNodB):
-        from capacity_estimation.calc_capacity import make_BMI_list 
-        tmp=make_BMI_list(EsNodB,self.M)
-        seq_of_channels=np.argsort(tmp[:len(tmp)//2])
-        num_of_channels=len(seq_of_channels)
+        #block interleaver
+        #from capacity_estimation.calc_capacity import make_BMI_list 
+        #tmp=make_BMI_list(EsNodB,self.M)
+        #print(tmp)
+        #seq_of_channels=np.argsort(tmp[:len(tmp)//2])
+        #print(seq_of_channels)
+        #num_of_channels=len(seq_of_channels)
+        
+        seq=np.arange(self.N,dtype=int)
+        #seq=np.reshape(seq,[num_of_channels,-1],order='C')
+        #seq=seq[seq_of_channels,:]
+        #seq=np.ravel(seq,order='F')
+        #print(seq)
         #print(seq_of_channels)
         seq=np.arange(self.N,dtype=int)
-        res=np.empty(0,dtype=int)
-        for i in seq_of_channels:
-            res=np.concatenate([res,seq[i::num_of_channels]])
-        self.BICM_int=res
-        #print(self.BICM_int)
+        
+        #seq=np.reshape(seq,[2,-1],order='C')
+        #seq=np.ravel(seq,order='F')
+        
+        #tmp1=np.copy(seq[1::4])
+        #tmp2=np.copy(seq[2::4])
+        #print(tmp1)
+        #print(tmp2)
+        #seq[1::4]=tmp2
+        #print(seq[0:512])
+        #seq[2::4]=tmp1        
+        #print(seq[0:512])
+        #chenge from normal polar code order to simplified polar code
+        
+        #print(seq)
+        for _ in range(int(np.log2(self.N))):
+            seq=np.reshape(seq,[2,-1],order='C')
+        seq=np.ravel(seq,order='F')
+        
+        self.BICM_int=seq
+        #print(self.BICM_deint[:512])
+        #print(self.BICM_deint[512:])
+        print(seq)
         self.BICM_deint=np.argsort(self.BICM_int)
            
     def main_func(self,EsNodB):

@@ -2,25 +2,13 @@ import ray
 import pickle
 import sys
 import numpy as np
-from main_sep import Mysystem
+from main import Mysystem
 import itertools
 import multiprocessing
 
 a=multiprocessing.cpu_count()
-#ray.init(num_cpus=a*7//10)
+ray.init(num_cpus=a*7//10)
 #ray.init()
-@ray.remote
-class TaskCanceler(object):
-    def __init__(self):
-        self.task_canceled = False
-
-    def cancel_task(self):
-        """The driver can call this to cancel the task."""
-        self.task_canceled = True
-
-    def is_task_canceled(self):
-        """The task calls this to check if it is canceled."""
-        return self.task_canceled
 
 @ray.remote
 def output(dumped,EbNodB):
@@ -69,8 +57,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=5
-        self.EbNodB_end=10
+        self.EbNodB_start=16.5
+        self.EbNodB_end=18.5
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -229,4 +217,4 @@ def monte_carlo(M,K):
     mc.monte_carlo_calc(result_ids_array,M_list)
   
 if __name__=="__main__":
-    monte_carlo(16,512)  
+    monte_carlo(256,512)  
