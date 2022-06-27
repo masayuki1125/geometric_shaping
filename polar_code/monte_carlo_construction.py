@@ -8,9 +8,14 @@ import numpy as np
 import pickle
 import sys
 import multiprocessing
-import os
 import math
 import matplotlib.pyplot as plt
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from main import Mysystem_Polar
+
 
 # In[75]:
 
@@ -179,9 +184,9 @@ class monte_carlo():
     const=Myconstruction(N,M,design_SNR,**kwargs)
     "comment if BICM or not"
     #if const.BICM==True:
-    #    print("use BICM")
+        #print("use BICM")
     #else:
-    #    print("don't use BICM")
+        #print("don't use BICM")
     
     if N!=const.N:
         print("monte_carlo codelength error!!")
@@ -262,7 +267,7 @@ class monte_carlo():
     filename="{}QAM_{}_{}".format(const.M,const.N,const.design_SNR)
     
     if const.BICM==True:
-        filename+="_BICM"
+        filename+="_BICM_rand"
     
     #if file exists, then load txt file
     filename=dir_name+"/"+filename
@@ -643,6 +648,7 @@ class Myconstruction:
     def __init__(self,N,M,design_SNR,**kwargs):
         
         if kwargs.get('BICM_int') is not None:
+            print("use BICM")
             self.BICM_int=kwargs.get("BICM_int")
             self.BICM=True
             self.BICM_deint=np.argsort(self.BICM_int)
@@ -704,16 +710,18 @@ if __name__=="__main__":
     const=monte_carlo()
     print(const.main_const(N,K,EsNodB,M))
     '''
-    N=4096
-    K=2048
-    M_list=[256]
-    EsNodB_list=np.arange(7.5,20,0.5)
+    '''
+    N=1024
+    K=512
+    M_list=[16,256]
+    EsNodB_list=np.arange(4,10,0.5)
     for M in M_list:
         for EsNodB in EsNodB_list:  
-            #if M==16:
-                #EsNodB+=5
-            #elif M==256:
-                #EsNodB+=5
-            const=monte_carlo()
+            if M==16:
+                EsNodB+=0
+            elif M==256:
+                EsNodB+=10
+            
             const.main_const(N,K,EsNodB,M)    
+    '''
     

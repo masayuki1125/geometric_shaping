@@ -93,7 +93,7 @@ class Mysystem:
         #block interleaver
         from capacity_estimation.calc_capacity import make_BMI_list 
         tmp=make_BMI_list(EsNodB,self.M)
-        ##print(tmp)
+        print(tmp)
         seq_of_channels=np.argsort(tmp[:len(tmp)//2])
         #print(seq_of_channels)
         num_of_channels=len(seq_of_channels)
@@ -103,9 +103,9 @@ class Mysystem:
         seq=seq[seq_of_channels,:]
         seq=np.ravel(seq,order='F')
         #print(seq_of_channels)
-        #print(seq)
-        self.BICM_int=seq
-        self.BICM_deint=np.argsort(self.BICM_int)
+        print(seq)
+        self.BICM_deint=seq
+        self.BICM_int=np.argsort(self.BICM_deint)
            
     def main_func(self,EsNodB):
         #adaptive change of BICM interleaver
@@ -193,7 +193,7 @@ class Mysystem:
             info=np.concatenate([info,info_sep])
             cwd=np.concatenate([cwd,cwd_sep])
             
-            if i==2:
+            if i==3:
                 info_use=np.concatenate([info_use,info_sep])
                 #print(len(info_use),"info_use")
                 
@@ -209,13 +209,15 @@ class Mysystem:
             Lc=Lc[self.BICM_deint]
             
         EST_info=np.empty(0)
-        #for i in range(self.enc_num):
-            #EST_info_sep=self.dc[i].polar_decode(Lc[i*self.N_sep:(i+1)*self.N_sep])
-            #EST_info=np.concatenate([EST_info,EST_info_sep])
-        EST_info=self.dc[2].polar_decode(Lc[i*self.N_sep:(i+1)*self.N_sep])
+        for i in range(self.enc_num):
+            EST_info_sep=self.dc[i].polar_decode(Lc[i*self.N_sep:(i+1)*self.N_sep])
+            EST_info=np.concatenate([EST_info,EST_info_sep])
+            
+        i=3
+        EST_info=self.dc[i].polar_decode(Lc[i*self.N_sep:(i+1)*self.N_sep])
         
-        print(len(info_use))
-        print(len(EST_info))
+        #print(len(info_use))
+        #print(len(EST_info))
         
         return info_use,EST_info
     
@@ -223,7 +225,7 @@ if __name__=='__main__':
     K=512 #symbol数
     M=256
     
-    EsNodB=15.0
+    EsNodB=19.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")
