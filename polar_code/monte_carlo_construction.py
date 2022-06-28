@@ -10,11 +10,7 @@ import sys
 import multiprocessing
 import math
 import matplotlib.pyplot as plt
-
 import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from main import Mysystem_Polar
 
 
 # In[75]:

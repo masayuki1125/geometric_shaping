@@ -24,14 +24,14 @@ def output(dumped,EbNodB):
 
     #prepare some constants
     MAX_ALL=10**3
-    MAX_ERR=10
+    MAX_ERR=1
     count_bitall=0
     count_biterr=0
     count_all=0
     count_err=0
     
 
-    while count_all<MAX_ALL and count_err<MAX_ERR:
+    while count_err<MAX_ERR: #count_all<MAX_ALL and count_err<MAX_ERR:
         #print("\r"+str(count_err),end="")
         information,EST_information=cd.main_func(EbNodB)
         
@@ -57,7 +57,7 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=5
+        self.EbNodB_start=9.5
         self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
@@ -186,35 +186,34 @@ class savetxt():
             print(str(self.mc.EbNodB_range[i]),str(BLER[i]),str(BER[i]),file=f)
 
 # In[ ]:
-#if __name__=="__main__":
+if __name__=="__main__":
 
-def monte_carlo(M,K):
-    #K=512
+#def monte_carlo(M,K):
+    K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[M]
+    M_list=[16,256]
     result_ids_array=[]
     
-    #for M in M_list:
+    for M in M_list:
         
-    '''
-    if M==16:
-        mc.EbNodB_start+=5
-        mc.EbNodB_end+=5
-        mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
-    elif M==256:
-        mc.EbNodB_start+=10
-        mc.EbNodB_end+=10
-        mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
-    '''
-    print(mc.EbNodB_range)
     
-    cd=Mysystem(M,K)
-    dumped=pickle.dumps(cd)
-    print("M",M)
-    result_ids_array.append(mc.monte_carlo_get_ids(dumped))
+        if M==16:
+            mc.EbNodB_start+=0
+            mc.EbNodB_end+=0
+            mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
+        elif M==256:
+            mc.EbNodB_start+=10
+            mc.EbNodB_end+=10
+            mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
+        print(mc.EbNodB_range)
+        
+        cd=Mysystem(M,K)
+        dumped=pickle.dumps(cd)
+        print("M",M)
+        result_ids_array.append(mc.monte_carlo_get_ids(dumped))
 
-    mc.monte_carlo_calc(result_ids_array,M_list)
+        mc.monte_carlo_calc(result_ids_array,M_list)
   
-if __name__=="__main__":
-    monte_carlo(16,512)  
+#if __name__=="__main__":
+    #monte_carlo(16,512)  
