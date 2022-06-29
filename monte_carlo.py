@@ -6,7 +6,7 @@ from main import Mysystem
 import itertools
 import multiprocessing
 
-a=multiprocessing.cpu_count()
+#a=multiprocessing.cpu_count()
 #ray.init(num_cpus=a*7//10)
 ray.init()
 
@@ -23,15 +23,15 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**3
-    MAX_ERR=1
+    MAX_ALL=10**2
+    MAX_ERR=10
     count_bitall=0
     count_biterr=0
     count_all=0
     count_err=0
     
 
-    while count_err<MAX_ERR: #count_all<MAX_ALL and count_err<MAX_ERR:
+    while count_all<MAX_ALL and count_err<MAX_ERR:
         #print("\r"+str(count_err),end="")
         information,EST_information=cd.main_func(EbNodB)
         
@@ -57,7 +57,7 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=9.5
+        self.EbNodB_start=4
         self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 

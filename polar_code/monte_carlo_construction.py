@@ -202,10 +202,7 @@ class monte_carlo():
     #initial constant
     const=pickle.loads(dumped)
     
-    if const.N<=2048:
-        epoch=10**4
-    else:
-        epoch=10**3
+    epoch=10**4
     
     c=np.zeros(const.N)
     for _ in range(epoch):
@@ -644,7 +641,7 @@ class Myconstruction:
     def __init__(self,N,M,design_SNR,**kwargs):
         
         if kwargs.get('BICM_int') is not None:
-            print("use BICM")
+            #print("use BICM")
             self.BICM_int=kwargs.get("BICM_int")
             self.BICM=True
             self.BICM_deint=np.argsort(self.BICM_int)
