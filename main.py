@@ -31,19 +31,18 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        self.BICM=True 
         const_var=3 #1:MC 2:iGA 3:RCA
         
         ##provisional const
-        self.type=3#1:No intlv 2:rand intlv 3:Block intlv 4:separated scheme
+        self.type=4#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         if self.type==1:
-            self.BICM=False
-        elif self.type==2:
-            self.BICM=True
+            print("interleaver type error!")
         elif self.type==3:
+            self.BICM=False
+        elif self.type==2 or self.type==4:
             self.BICM=True
-        elif self.type==4:
-            self.BICM=True
+        else:
+            print("interleaver type errir!!")
         
         #for construction
         if const_var==1:
@@ -65,16 +64,24 @@ class Mysystem_Polar:
         #channel
         self.ch=AWGN._AWGN()
         
+
+        
         #filename
-        self.filename="polar_code_SC_{}_{}_{}".format(self.N,self.K,self.M)
+        self.filename="polar_{}_{}_{}QAM".format(self.N,self.K,self.M)
         self.filename=self.filename+const_name
         if self.cd.systematic_polar==True:
             self.filename="systematic_"+self.filename
+            
+        #decoder type
+        if self.cd.decoder_ver==0:
+            self.filename+="_SC"
+        elif self.cd.decoder_ver==2:
+            self.filename+="_CA_SCL"
         
         #BICM or not
         if self.BICM==True:
             #悪いチャネルと良いチャネルを別々にしてみる
-            if self.type==3 or self.type==4:
+            if self.type==1 or self.type==2:
                 seq=np.arange(self.N,dtype=int)
                 
                 num_of_channels=int(np.log2(self.M**(1/2)))
@@ -84,13 +91,11 @@ class Mysystem_Polar:
                 self.BICM_int=res
                 self.BICM_deint=np.argsort(self.BICM_int)
                 
-            if self.type==2:
+            if self.type==4:
                 self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
-                
-            self.filename=self.filename+"_BICM"
             
         #provisional
-        self.filename+="_{}".format(self.type)
+        self.filename+="_type{}".format(self.type)
         
         #output filename to confirm which program I run
         print(self.filename)
@@ -111,7 +116,7 @@ class Mysystem_Polar:
            
     def main_func(self,EsNodB):
         #adaptive change of BICM interleaver
-        if self.type==3:
+        if self.type==2:
             self.adaptive_BICM(EsNodB)
         #print(self.BICM_int)
         #adaptive dicision of frozen bits
