@@ -109,6 +109,8 @@ class Improved_GA():
       elif f(c)<zeta:
         b=c
         error=b-a
+      else:
+          print("something wrong with bisection method")
 
       if error<0:
         print("something is wrong")
@@ -195,8 +197,8 @@ class Improved_GA():
                 #if u1!=u2:
                     #print("u1 not equal u2")
 
-                if u1<=self.G_0 and u1<=self.G_1:
-                    #es=(u1**2)/2-(u1**3)/2+2*(u1**4)/3
+                if u1<=self.G_0 and u2<=self.G_0:
+                    #res=(u1**2)/2-(u1**3)/2+2*(u1**4)/3
                     #res=1/2*u1**2-1/2*u1**3+2/3*u1**4
                     res=1/2*u1*u2-1/4*u1*u2**2-1/4*u1**2*u2+5/24*u1*u2**3+1/4*u1**2*u2**2+5/24*u1**3*u2
                 else:
@@ -211,12 +213,30 @@ class Improved_GA():
                     z1=self.xi(u1)
                     z2=self.xi(u2)
                     
+                    ##check
+                    if z1>self.Z_0 and z2>self.Z_0:
+                        print("z1 and z2 are error")
+                    
+                    
+                    #if np.exp(z1)+np.exp(z2)-np.exp(z1+z2)==0:
+                        #print("zero encounter")
+                        #print(z1,z2)
+                        #print(u1,u2)
+                        #print(np.exp(z1))
+                        #print(np.exp(z2))
                     #a=max(z1,z2)+np.log(1+np.exp(-1*abs(z1-z2)))
                     #b=z1+z2
                     #if a<b:
                         #print("false const")
                     #c=a+np.log(1-np.exp(b-a))
-                    c=np.log(np.exp(z1)+np.exp(z2)-np.exp(z1+z2))
+                    if z1+z2<-1000:
+                        a=max(z1,z2)+np.log(1+np.exp(-1*abs(z1-z2)))
+                        b=z1+z2
+                        if a<b:
+                            print("false const")
+                        c=a+np.log(1-np.exp(b-a))
+                    else:
+                        c=np.log(np.exp(z1)+np.exp(z2)-np.exp(z1+z2))
                     #print(c)
                     if c>0:
                         print("c is plus err")
@@ -441,3 +461,4 @@ class Improved_GA():
         
         return gamma
         
+# %%

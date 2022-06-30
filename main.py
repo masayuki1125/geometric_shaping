@@ -32,10 +32,10 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         self.BICM=True 
-        const_var=1 #1:MC 2:iGA 3:RCA
+        const_var=2 #1:MC 2:iGA 3:RCA
         
         ##provisional const
-        self.type=2 #1:No intlv 2:rand intlv 3:Block intlv 4:separated scheme
+        self.type=3#1:No intlv 2:rand intlv 3:Block intlv 4:separated scheme
         if self.type==1:
             self.BICM=False
         elif self.type==2:
@@ -298,7 +298,6 @@ elif FEC==3:
             super().__init__(M,K)  
 
 if __name__=='__main__':
-    '''
     K=512 #symbol数
     M=16
     
@@ -319,9 +318,8 @@ if __name__=='__main__':
             count_err+=1
     print("result")
     print(count_err/count_all)
+    
     '''
-    
-    
     K=512
     M_list=[16,256]
     EsNodB_list=np.arange(4,10,0.5)
@@ -335,4 +333,5 @@ if __name__=='__main__':
             mysys.main_func(EsNodB)
             const=monte_carlo_construction.monte_carlo()
             const.main_const(mysys.N,mysys.K,EsNodB,mysys.M,BICM_int=mysys.BICM_int)   
+    '''
 # %%

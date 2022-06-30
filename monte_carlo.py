@@ -23,8 +23,8 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**2
-    MAX_ERR=10
+    MAX_ALL=10**4
+    MAX_ERR=100
     count_bitall=0
     count_biterr=0
     count_all=0
@@ -57,7 +57,7 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=4
+        self.EbNodB_start=5
         self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
@@ -77,9 +77,6 @@ class MC():
         result_ids=[[] for i in range(len(self.EbNodB_range))]
 
         for i,EbNodB in enumerate(self.EbNodB_range):
-            
-            
-            
             for j in range(self.MAX_ERR):
                 #multiprocess    
                 result_ids[i].append(output.remote(dumped,EbNodB))  # 並列演算
@@ -109,7 +106,6 @@ class MC():
                     #mp_ids=finished_ids
                     #print(len(finished_ids))
                     #print(len(running_ids))
-                    
                 result=ray.get(result_ids_array[i][j])
                
                 #resultには同じSNRのリストが入る
@@ -192,12 +188,13 @@ if __name__=="__main__":
     K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[16,256]
+    M_list=[16]
     result_ids_array=[]
     
-    for M in M_list:
-        
     
+    for M in M_list:
+        #print(M)
+        '''
         if M==16:
             mc.EbNodB_start+=0
             mc.EbNodB_end+=0
@@ -207,6 +204,7 @@ if __name__=="__main__":
             mc.EbNodB_end+=10
             mc.EbNodB_range=np.arange(mc.EbNodB_start,mc.EbNodB_end,0.5)
         print(mc.EbNodB_range)
+        '''
         
         cd=Mysystem(M,K)
         dumped=pickle.dumps(cd)
