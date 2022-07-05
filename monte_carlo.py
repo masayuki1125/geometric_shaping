@@ -6,9 +6,9 @@ from main import Mysystem
 import itertools
 import multiprocessing
 
-#a=multiprocessing.cpu_count()
-#ray.init(num_cpus=a*7//10)
-ray.init()
+a=multiprocessing.cpu_count()
+ray.init(num_cpus=a*4//10)
+#ray.init()
 
 @ray.remote
 def output(dumped,EbNodB):
@@ -23,8 +23,8 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**4
-    MAX_ERR=100
+    MAX_ALL=10**3
+    MAX_ERR=10
     count_bitall=0
     count_biterr=0
     count_all=0
@@ -57,8 +57,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=5
-        self.EbNodB_end=10
+        self.EbNodB_start=13
+        self.EbNodB_end=17
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -167,16 +167,6 @@ class savetxt():
       
     with open(self.mysys.filename,'w') as f:
 
-        #print("#N="+str(self.mysis.cd.N),file=f)
-        #print("#K="+str(self.mysis.cd.K),file=f)
-        #print("#list_size="+str(self.cd.list_size),file=f)
-        #print("#Strong User SNR="+str(self.cd.EbNodB1),file=f)
-        #print("#power allocation beta="+str(self.cd.beta),file=f)
-        #print("#TX_antenna="+str(self.mc.TX_antenna),file=f)
-        #print("#RX_antenna="+str(self.mc.RX_antenna),file=f)
-        #print("#modulation_symbol="+str(self.ch.M),file=f)
-        #print("#MAX_BLERR="+str(self.mc.MAX_ERR),file=f)
-        #print("#construction="+str(self.mysys.const),file=f)
         print("#EsNodB,BLER,BER",file=f)  
         for i in range(len(BLER)):
             print(str(self.mc.EbNodB_range[i]),str(BLER[i]),str(BER[i]),file=f)
@@ -185,10 +175,10 @@ class savetxt():
 if __name__=="__main__":
 
 #def monte_carlo(M,K):
-    K=512
+    K=512*16
     print("K=",K)
     mc=MC(K)
-    M_list=[16]
+    M_list=[256]
     result_ids_array=[]
     
     

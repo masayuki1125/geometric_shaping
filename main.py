@@ -22,7 +22,7 @@ from modulation.BICM import make_BICM
 from modulation.BICM import BICM_ID
 from channel import AWGN
 
-FEC=1 #1:polar code 2:turbo code 3:LDPC code
+FEC=1#1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):
@@ -31,10 +31,10 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        const_var=3 #1:MC 2:iGA 3:RCA
+        const_var=2 #1:MC 2:iGA 3:RCA
         
         ##provisional const
-        self.type=4#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=2#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         if self.type==1:
             print("interleaver type error!")
         elif self.type==3:
@@ -154,7 +154,7 @@ class Mysystem_Polar:
         info,cwd=self.ec.polar_encode()
         if self.BICM==True:
             cwd=cwd[self.BICM_int]
-        TX_conste=self.modem.modulate(cwd)
+        TX_conste=self.modem.modulate(cwd)        
         RX_conste=self.ch.add_AWGN(TX_conste,No)
         Lc=self.modem.demodulate(RX_conste,No)
         if self.BICM==True:
@@ -303,16 +303,16 @@ elif FEC==3:
             super().__init__(M,K)  
 
 if __name__=='__main__':
-    K=512 #symbol数
-    M=16
+    K=4096 #symbol数
+    M=4
     
-    EsNodB=8.0
+    EsNodB=1.5
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")
     print(system.N,system.K)
     
-    MAXCNT=5
+    MAXCNT=100
     count_err=0
     count_all=0
     while count_err<MAXCNT:

@@ -213,8 +213,8 @@ class monte_carlo():
       d=np.zeros(len(llr))
         #print(llr)
         #from IPython.core.debugger import Pdb; Pdb().set_trace()
-      d[(2*info-1)*llr<0]=0
-      d[(2*info-1)*llr>=0]=1
+      d[(2*info-1)*llr<0]=0 #no error occur
+      d[(2*info-1)*llr>=0]=1 # error occur
       
       c=c+d
     
@@ -261,7 +261,7 @@ class monte_carlo():
     
     if const.BICM==True:
         filename+="_BICM_rand"
-    
+        #filename+="_BICM"
     #if file exists, then load txt file
     filename=dir_name+"/"+filename
     

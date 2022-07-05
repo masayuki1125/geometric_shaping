@@ -115,10 +115,8 @@ class RCA():
             gamma=gamma*np.ones(N)
             
         elif M==4:
-        #else:
             #print("QPSK")
-            dmin=(6/(M-1))**(1/2)
-            gamma=10**(design_SNR/10)*dmin/2 #QPSK(sqrt(2))
+            gamma=10**(design_SNR/10)*1/2
             gamma=gamma*np.ones(N)
         
         else:
@@ -170,25 +168,6 @@ class RCA():
         
         if soft_output:
             return xi
-        '''
-        tmp=np.zeros((n+1,N))
-        tmp[0]=gamma
-        for i in range(1,tmp.shape[0]):
-            for j in range(tmp.shape[1]):
-                if (j//2**(n-i))%2==0: #left_operation
-                    xi0=tmp[i-1,j]
-                    xi1=tmp[i-1,j+2**(n-i)]
-                    
-                    L0 = self.calc_lambda( xi0 )
-                    L1 = self.calc_lambda( xi1 )
-                    tmp[i,j]=self.calc_lambda( max( L0, L1 )  + log( 1.0 + exp( - fabs( L0 - L1 ) ) ) )
-        
-                else :#right operation
-                    xi0=tmp[i-1,j]
-                    xi1=tmp[i-1,j-2**(n-i)]
-                    
-                    tmp[i,j]=max( xi0, xi1 ) + log( 1.0 + exp( - fabs( xi0 - xi1 ) ) )                 
-        '''
                     
         #return xi
     

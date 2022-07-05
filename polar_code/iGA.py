@@ -235,11 +235,15 @@ class Improved_GA():
                         if a<b:
                             print("false const")
                         c=a+np.log(1-np.exp(b-a))
-                    else:
+                    else:  
                         c=np.log(np.exp(z1)+np.exp(z2)-np.exp(z1+z2))
                     #print(c)
                     if c>0:
                         print("c is plus err")
+                        print("c",c)
+                        print("log",np.exp(z1-a)+np.exp(z2-a)-np.exp(z1+z2-a))
+                        print("z1,z2",z1,z2)
+                        c=0
                     if np.isnan(c):
                         print("nan err")
                         
@@ -289,12 +293,8 @@ class Improved_GA():
       gamma=np.ones(N)
       gamma=gamma*4*(10 ** (design_SNR / 10)) #mean of LLR when transmit all 0
     elif M==4:
-      #print(M)
-      dmin=(6/(M-1))**(1/2)
-      #dmin=1
-      #print(dmin/2)
       gamma=np.ones(N)
-      gamma=gamma*4*(10 ** (design_SNR / 10))*(dmin/2)
+      gamma=gamma*4*(10 ** (design_SNR / 10))*1/2
     else:
       #print("multi QAM")
       tmp=make_BMI_list(design_SNR,M)
@@ -326,7 +326,7 @@ class Improved_GA():
                 #if u1!=u2:
                     #print("u1 not equal u2")
 
-                if u1<=self.G_0 and u1<=self.G_1:
+                if u1<=self.G_0 and u2<=self.G_0:
                     #es=(u1**2)/2-(u1**3)/2+2*(u1**4)/3
                     #res=1/2*u1**2-1/2*u1**3+2/3*u1**4
                     res=1/2*u1*u2-1/4*u1*u2**2-1/4*u1**2*u2+5/24*u1*u2**3+1/4*u1**2*u2**2+5/24*u1**3*u2
@@ -351,6 +351,8 @@ class Improved_GA():
                     #print(c)
                     if c>0:
                         print("c is plus err")
+                        print("c",c)
+                        print("log",np.exp(z1)+np.exp(z2)-np.exp(z1+z2))
                     if np.isnan(c):
                         print("nan err")
                         
