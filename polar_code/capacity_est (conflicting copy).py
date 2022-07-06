@@ -301,7 +301,7 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
     else:
         print("something wrong with const_ver")
 
-    EsNodB_range=np.arange(0,100,0.5)
+    EsNodB_range=np.arange(0,20,0.5)
     BLER=np.zeros(len(EsNodB_range))
     for i,SNR in enumerate(EsNodB_range):
         
@@ -332,7 +332,7 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
             BLER[i]=calc_SCL_BLER(EsNo_list,decoder_ver)
             
             #BLER[i]=1-np.prod(1-Q(EsNo_list))
-            if BLER[i]<10**(-6):
+            if BLER[i]==0:
                 BLER=BLER[:i]
                 break
         
@@ -384,9 +384,9 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 
 N=1024
 K=N//2
-M_list=[256]#,2**2**6]
-type_list=[1]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
-const_ver_list=[2]#1:RCA 2:IGA 3:MC
+M_list=[16,256]
+type_list=[2,3,4]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+const_ver_list=[1,2]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
     for M in M_list:

@@ -81,13 +81,11 @@ def make_AMI(EsNodB,M):
     return res
 
 def make_BMI(EsNodB,M):
-    each_res=False #default:false
+    each_res=True #default:false
     
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=100000
-    if M>=256:
-        count_num//=10#変調多値数が大きくなると、計算が重くなるため、カウント回数を減らす
+    count_num=10000
         
     result=0
     all_count=count_num
@@ -97,7 +95,7 @@ def make_BMI(EsNodB,M):
     else:    
         result=0
     
-    for _ in range(all_count//count_num):
+    for _ in range(100):
         #make info matrices
         info=cp.random.randint(0,M,count_num)
         #rint(info)
@@ -147,14 +145,16 @@ def make_BMI(EsNodB,M):
             #print(mat_ones_zeros_i.shape) #(count_num,2,M/2)
             #print(mat_ones_zeros_i[0])
             
-            res_ones_zeros_i=cp.take_along_axis(mat_ones_zeros_i,ith_bits[:,None,None],axis=1)
+            res_ones_zeros_i=cp.take_along_axis(mat_ones_zeros_i,ith_bits[:,None,None],axis=1)[:,0,:].T
             #print(res_ones_zeros_i.shape) #(count_num,1,M/2)
             #print(res_ones_zeros_i)
             
-            res_ones_zeros_i=res_ones_zeros_i[:,0,:]
+            del mat_ones_zeros_i
+            
+            #res_ones_zeros_i=res_ones_zeros_i[:,0,:]
             #print(res_ones_zeros_i.shape) #(count_num,M/2)
             
-            res_ones_zeros_i=res_ones_zeros_i.T
+            #res_ones_zeros_i=res_ones_zeros_i.T
             #print(RX_const[0])
             num=cp.sum(cp.exp(-1*cp.abs(np.tile(RX_const,(len(symbol),1))-symbol.reshape(-1,1))**2/No),axis=0)
             den=cp.sum(cp.exp(-1*cp.abs(np.tile(RX_const,(len(ones[0]),1))-res_ones_zeros_i)**2/No),axis=0)
@@ -208,8 +208,8 @@ def make_BMI_list(EsNodB,M):
 # In[104]:
 if __name__=='__main__':
     
-    SNR_range=np.arange(-10,20,0.5)
-    M_list=[2]
+    SNR_range=np.arange(0,20,0.5)
+    M_list=[2**(2**4)]
     
     '''
     BMI_list=np.zeros(len(SNR_range))
@@ -223,6 +223,7 @@ if __name__=='__main__':
     BMI_list=np.zeros(len(SNR_range))
 
     for M in M_list:
+        '''
         AMI_list=np.zeros(len(SNR_range))
         filename="AMI_{}QAM".format(M)
         for i,EsNodB in enumerate(SNR_range):
@@ -231,7 +232,7 @@ if __name__=='__main__':
             with open(filename,'w') as f:
                 for i in range(len(SNR_range)):
                     print(str(SNR_range[i]),str(AMI_list[i]),file=f)
-                    
+        '''            
         BMI_list=np.zeros(len(SNR_range))
         filename="BMI_{}QAM".format(M)
         for i,EsNodB in enumerate(SNR_range):

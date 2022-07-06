@@ -342,12 +342,14 @@ class Improved_GA():
                     z1=self.xi(u1)
                     z2=self.xi(u2)
                     
-                    #a=max(z1,z2)+np.log(1+np.exp(-1*abs(z1-z2)))
-                    #b=z1+z2
-                    #if a<b:
-                        #print("false const")
-                    #c=a+np.log(1-np.exp(b-a))
-                    c=np.log(np.exp(z1)+np.exp(z2)-np.exp(z1+z2))
+                    if z1+z2<-1000:
+                        a=max(z1,z2)+np.log(1+np.exp(-1*abs(z1-z2)))
+                        b=z1+z2
+                        if a<b:
+                            print("false const")
+                        c=a+np.log(1-np.exp(b-a))
+                    else:  
+                        c=np.log(np.exp(z1)+np.exp(z2)-np.exp(z1+z2))
                     #print(c)
                     if c>0:
                         print("c is plus err")
