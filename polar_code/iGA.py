@@ -145,6 +145,8 @@ class Improved_GA():
     if kwargs.get('BICM_int') is not None:
         BICM_int=kwargs.get("BICM_int")
         BICM_deint=np.argsort(BICM_int)
+        
+        
         BICM=True
     else:
         BICM=False
@@ -177,7 +179,14 @@ class Improved_GA():
       #print(tmp)
       gamma=np.tile(tmp,N//int(np.log2(M)))
     
+    #print(BICM_int)
+    #print(BICM_deint)
+    #print(gamma.shape)
+    #print(gamma)
+    
+    
     if BICM==True:
+        print("pass")
         gamma=gamma[BICM_deint]
             
     #tmp=np.zeros(len(gamma))
@@ -187,13 +196,20 @@ class Improved_GA():
         #tmp[i]=gamma[self.reverse(i,n)]  
     
     n=int(np.log2(N))
+    #print(gamma)
+    
     for i in range(0,n):
         J = 2**(n-i)
+        #print(int(J/2))
         for k in range(0,int(N/J)):
             #import pdb; pdb.set_trace()
             for j in range(0,int(J/2)):
                 u1 = gamma[k * J + j ]
                 u2 = gamma[k * J + j + int(J/2) ]
+                
+                #print(k * J + j)
+                
+                
                 #if u1!=u2:
                     #print("u1 not equal u2")
 
@@ -247,11 +263,13 @@ class Improved_GA():
                     if np.isnan(c):
                         print("nan err")
                         
-                    res=self.xi_inv(c)
+                    res=self.xi_inv(c)  
                     
                 gamma[k * J + j] = res
                 gamma[k * J + j + int(J/2)] = u1+u2
     
+        #print(gamma)
+        #from IPython.core.debugger import Pdb; Pdb().set_trace()  
     
     
     if soft_output==True:
@@ -276,6 +294,9 @@ class Improved_GA():
     if kwargs.get('BICM_int') is not None:
         BICM_int=kwargs.get("BICM_int")
         BICM_deint=np.argsort(BICM_int)
+        
+        
+        
         BICM=True
     else:
         BICM=False
@@ -323,6 +344,9 @@ class Improved_GA():
             for j in range(0,int(J/2)):
                 u1 = gamma[k * J + j ]
                 u2 = gamma[k * J + j + int(J/2) ]
+                
+                
+                
                 #if u1!=u2:
                     #print("u1 not equal u2")
 

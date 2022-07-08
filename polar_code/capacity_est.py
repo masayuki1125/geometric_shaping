@@ -32,10 +32,10 @@ def Q(EsNo):
 
 
 def adaptive_BICM_calc(N,M,EsNodB,type):
-    BICM_int=np.arange(N,dtype=int) #if type==3 end
+    BICM_deint=np.arange(N,dtype=int) #if type==3 end
         
     if type==4: #random interleave
-        BICM_int,_=make_BICM(N,M)
+        BICM_deint,_=make_BICM(N,M)
     
     elif type==1 or type==2: #block interleave
         tmp=make_BMI_list(EsNodB,M)
@@ -44,14 +44,16 @@ def adaptive_BICM_calc(N,M,EsNodB,type):
         #print(seq_of_channels)
         res=np.empty(0,dtype=int)
         for i in seq_of_channels:
-            res=np.concatenate([res,BICM_int[i::num_of_channels]])
-        BICM_int=res
+            res=np.concatenate([res,BICM_deint[i::num_of_channels]])
+        BICM_deint=res
     
     elif type==3: #no interleave
         pass
     
     else:
         print("error interleaver type!")
+        
+    BICM_int=np.argsort(BICM_deint)
         
     return BICM_int
 
@@ -382,11 +384,11 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 # In[11]:
 
 
-N=1024
+N=1024*8
 K=N//2
-M_list=[256]#,2**2**6]
-type_list=[1]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
-const_ver_list=[2]#1:RCA 2:IGA 3:MC
+M_list=[16,256]#,2**2**6]
+type_list=[1,2,3,4]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+const_ver_list=[1,2]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
     for M in M_list:
