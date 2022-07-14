@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import math
 import os
+import random
 #my module
 from LDPC_code import LDPC_construction
 from LDPC_code import LDPC_encode
@@ -33,27 +34,18 @@ class Mysystem_Polar:
         self.N=self.K*2
         const_var=2 #1:MC 2:iGA 3:RCA
         
-        ##provisional const
         self.type=2#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
-        if self.type==1:
-            print("interleaver type error!")
-        elif self.type==3:
-            self.BICM=False
-        elif self.type==2 or self.type==4:
-            self.BICM=True
-        else:
-            print("interleaver type errir!!")
         
         #for construction
         if const_var==1:
             self.const=monte_carlo_construction.monte_carlo()
-            const_name="_MC"
+            self.const_name="_MC"
         elif const_var==2:
             self.const=iGA.Improved_GA()
-            const_name="_iGA"
+            self.const_name="_iGA"
         elif const_var==3:
             self.const=RCA.RCA()
-            const_name="_RCA"
+            self.const_name="_RCA"
         
         #coding
         self.cd=polar_construction.coding(self.N,self.K)
@@ -64,75 +56,85 @@ class Mysystem_Polar:
         #channel
         self.ch=AWGN._AWGN()
         
-
+        #interleaver design
+        self.BICM_int,self.BICM_deint=self.make_BICM_int(self.N,self.M,self.type)
         
+        self.filename=self.make_filename()
+        
+    
+    def make_filename(self):
         #filename
-        self.filename="polar_{}_{}_{}QAM".format(self.N,self.K,self.M)
-        self.filename=self.filename+const_name
+        filename="polar_{}_{}_{}QAM".format(self.N,self.K,self.M)
+        filename=filename+self.const_name
         if self.cd.systematic_polar==True:
-            self.filename="systematic_"+self.filename
+            filename="systematic_"+filename
             
         #decoder type
         if self.cd.decoder_ver==0:
-            self.filename+="_SC"
+            filename+="_SC"
         elif self.cd.decoder_ver==2:
-            self.filename+="_CA_SCL"
-        
-        #BICM or not
-        if self.BICM==True:
-            #悪いチャネルと良いチャネルを別々にしてみる
-            if self.type==1 or self.type==2:
-                seq=np.arange(self.N,dtype=int)
-                
-                num_of_channels=int(np.log2(self.M**(1/2)))
-                res=np.empty(0,dtype=int)
-                for i in range(num_of_channels):
-                    res=np.concatenate([res,seq[i::num_of_channels]])
-                self.BICM_int=res
-                self.BICM_deint=np.argsort(self.BICM_int)
-                
-            if self.type==4:
-                self.BICM_int,self.BICM_deint=make_BICM(self.N,self.M)
-            
+            filename+="_CA_SCL"
+                    
         #provisional
-        self.filename+="_type{}".format(self.type)
+        filename+="_type{}".format(self.type)
         
         #output filename to confirm which program I run
-        print(self.filename)
+        print(filename)
         
-    def adaptive_BICM(self,EsNodB):
-        from capacity_estimation.calc_capacity import make_BMI_list 
-        tmp=make_BMI_list(EsNodB,self.M)
-        seq_of_channels=np.argsort(tmp[:len(tmp)//2])
-        num_of_channels=len(seq_of_channels)
-        #print(seq_of_channels)
-        seq=np.arange(self.N,dtype=int)
-        res=np.empty(0,dtype=int)
-        for i in seq_of_channels:
-            res=np.concatenate([res,seq[i::num_of_channels]])
-        self.BICM_int=res
-        #print(self.BICM_int)
-        self.BICM_deint=np.argsort(self.BICM_int)
+        return filename
+        
+    def make_BICM_int(self,N,M,type):
+        
+        BICM_int=np.arange(N,dtype=int)
+        #modify BICM int from simplified to arikan decoder order
+        bit_reversal_sequence=self.cd.bit_reversal_sequence
+        BICM_int=BICM_int[bit_reversal_sequence]
+        
+        if type==1:#1:separated scheme 
+            pass
+        elif type==2:#2:Block intlv(No intlv in arikan polar decoder) 
+            pass
+        elif type==3:#3:No intlv(Block intlv in arikan polar decoder) 
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            BICM_int=np.ravel(BICM_int,order='F')
+        elif type==4:#4:rand intlv
+            random.shuffle(BICM_int)
+        elif type==2:#2:Block intlv(No intlv in arikan polar decoder) 
+            tmp=np.arange(N//2,dtype=int)
+            random.shuffle(tmp)
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            BICM_int[0]=BICM_int[0][tmp]
+            BICM_int[1]=BICM_int[1][tmp]
+            BICM_int=np.ravel(BICM_int,order='C')
+        elif type==5:
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            random.shuffle(BICM_int[0])
+            random.shuffle(BICM_int[1])
+            BICM_int=np.ravel(BICM_int,order='C')
+            
+        else:
+            print("interleaver type error")
+            
+        
+            
+        BICM_deint=np.argsort(BICM_int)
+        
+        np.savetxt("deint",BICM_deint,fmt='%.0f')
+        
+        #print(BICM_int)
+        #print(BICM_deint)
+        
+        return BICM_int,BICM_deint
            
     def main_func(self,EsNodB):
-        #adaptive change of BICM interleaver
-        if self.type==2:
-            self.adaptive_BICM(EsNodB)
-        #print(self.BICM_int)
-        #adaptive dicision of frozen bits
-        if self.BICM==False:
-            if self.cd.decoder_ver==2:
-                CRC_len=len(self.cd.CRC_polynomial)-1  
-                frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M)
-            else:
-                frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M)
-        #if BICM is True:
-        elif self.BICM==True:#BICM purmutation
-            if self.cd.decoder_ver==2:
-                CRC_len=len(self.cd.CRC_polynomial)-1  
-                frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
-            else:
-                frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
+        
+        if self.cd.decoder_ver==2:
+            #print("pass")
+            CRC_len=len(self.cd.CRC_polynomial)-1  
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
+        else:
+            #print('pass2')
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
             
         #check
         for i in range(self.N):
@@ -152,15 +154,12 @@ class Mysystem_Polar:
         No=1/EsNo
 
         info,cwd=self.ec.polar_encode()
-        if self.BICM==True:
-            cwd=cwd[self.BICM_int]
+        cwd=cwd[self.BICM_int]
         TX_conste=self.modem.modulate(cwd)        
         RX_conste=self.ch.add_AWGN(TX_conste,No)
         Lc=self.modem.demodulate(RX_conste,No)
-        if self.BICM==True:
-            Lc=Lc[self.BICM_deint]
+        Lc=Lc[self.BICM_deint]
         EST_info=self.dc.polar_decode(Lc)
-        
         
         return info,EST_info
   
@@ -303,10 +302,10 @@ elif FEC==3:
             super().__init__(M,K)  
 
 if __name__=='__main__':
-    K=4096 #symbol数
-    M=4
+    K=512 #symbol数
+    M=16
     
-    EsNodB=1.5
+    EsNodB=8.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

@@ -183,11 +183,15 @@ class Improved_GA():
     #print(BICM_deint)
     #print(gamma.shape)
     #print(gamma)
-    
+
     
     if BICM==True:
-        print("pass")
+        #print("pass")
+        #print(BICM_deint)
+        #print(gamma)
         gamma=gamma[BICM_deint]
+        #print(gamma)
+        #import pdb; pdb.set_trace()
             
     #tmp=np.zeros(len(gamma))
     #n=int(log2(N))
@@ -196,13 +200,12 @@ class Improved_GA():
         #tmp[i]=gamma[self.reverse(i,n)]  
     
     n=int(np.log2(N))
-    #print(gamma)
     
     for i in range(0,n):
         J = 2**(n-i)
         #print(int(J/2))
         for k in range(0,int(N/J)):
-            #import pdb; pdb.set_trace()
+            
             for j in range(0,int(J/2)):
                 u1 = gamma[k * J + j ]
                 u2 = gamma[k * J + j + int(J/2) ]

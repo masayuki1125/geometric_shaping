@@ -14,10 +14,26 @@ import os
 sys.path.append(os.path.join(os.path.dirname('__file__'), '..'))
 from capacity_estimation.calc_capacity import make_BMI_list 
 from modulation.BICM import make_BICM
+import random
 
+
+def reverse_bits(N):
+    res=np.zeros(N,dtype=int)
+
+    for i in range(N):
+      tmp=format (i,'b')
+      tmp=tmp.zfill(int(np.log2(N))+1)[:0:-1]
+      #print(tmp) 
+      res[i]=reverse(i,N)
+    return res
+
+def reverse(n,N):
+    tmp=format (n,'b')
+    tmp=tmp.zfill(int(np.log2(N))+1)[:0:-1]
+    res=int(tmp,2) 
+    return res
 
 # In[2]:
-
 
 def Q(EsNo):
     BER=1/2*(1-special.erf(sqrt(EsNo)))
@@ -30,7 +46,7 @@ def Q(EsNo):
 
 # In[3]:
 
-
+'''
 def adaptive_BICM_calc(N,M,EsNodB,type):
     BICM_deint=np.arange(N,dtype=int) #if type==3 end
         
@@ -56,10 +72,36 @@ def adaptive_BICM_calc(N,M,EsNodB,type):
     BICM_int=np.argsort(BICM_deint)
         
     return BICM_int
+'''
+
+def make_BICM_int(N,M,type):
+        
+    BICM_int=np.arange(N,dtype=int)
+    #modify BICM int from simplified to arikan decoder order
+    bit_reversal_sequence=reverse_bits(N)
+    BICM_int=BICM_int[bit_reversal_sequence]
+    
+    if type==1:#1:separated scheme 
+        pass
+    elif type==2:#2:Block intlv(No intlv in arikan polar decoder) 
+        pass
+    elif type==3:#3:No intlv(Block intlv in arikan polar decoder) 
+        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        BICM_int=np.ravel(BICM_int,order='F')
+    elif type==4:#4:rand intlv
+        random.shuffle(BICM_int)
+    else:
+        print("interleaver type error")
+        
+    BICM_deint=np.argsort(BICM_int)
+    
+    #print(BICM_int)
+    #print(BICM_deint)
+    
+    return BICM_int,BICM_deint
 
 
 # In[4]:
-
 
 def calc_BLER_monte_carlo(N,K,M,type,design_SNR):
     #make directry name
@@ -311,7 +353,7 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
             
             #interleaver selection
             #print(SNR)
-            BICM_int=adaptive_BICM_calc(N,M,SNR,type)
+            BICM_int,BICM_deint=make_BICM_int(N,M,type)
             #gamma == EsNo(True value)
             if type==1:
                 gamma=np.sort(const.main_const_sep(N,K,SNR,M,BICM_int=BICM_int,soft_output=True))[::-1]
@@ -384,11 +426,11 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 # In[11]:
 
 
-N=1024*8
+N=1024
 K=N//2
-M_list=[16,256]#,2**2**6]
-type_list=[1,2,3,4]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
-const_ver_list=[1,2]#1:RCA 2:IGA 3:MC
+M_list=[16]#,2**2**6]
+type_list=[2,3,4]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+const_ver_list=[2]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
     for M in M_list:

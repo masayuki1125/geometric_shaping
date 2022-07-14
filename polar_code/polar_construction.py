@@ -5,6 +5,7 @@ from decimal import *
 import sys
 import multiprocessing
 import pickle
+from polar_code import RCA
 from polar_code import iGA
 
 class coding():

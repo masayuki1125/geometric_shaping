@@ -23,7 +23,7 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**3
+    MAX_ALL=10**4
     MAX_ERR=10
     count_bitall=0
     count_biterr=0
@@ -57,8 +57,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=13
-        self.EbNodB_end=17
+        self.EbNodB_start=8
+        self.EbNodB_end=8.5
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -175,10 +175,10 @@ class savetxt():
 if __name__=="__main__":
 
 #def monte_carlo(M,K):
-    K=512*16
+    K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[256]
+    M_list=[16]
     result_ids_array=[]
     
     
