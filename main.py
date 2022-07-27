@@ -32,9 +32,9 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        const_var=2 #1:MC 2:iGA 3:RCA
+        const_var=3 #1:MC 2:iGA 3:RCA
         
-        self.type=2#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=4#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         
         #for construction
         if const_var==1:
@@ -61,7 +61,6 @@ class Mysystem_Polar:
         
         self.filename=self.make_filename()
         
-    
     def make_filename(self):
         #filename
         filename="polar_{}_{}_{}QAM".format(self.N,self.K,self.M)
@@ -93,23 +92,31 @@ class Mysystem_Polar:
         if type==1:#1:separated scheme 
             pass
         elif type==2:#2:Block intlv(No intlv in arikan polar decoder) 
-            pass
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            BICM_int[0]=np.sort(BICM_int[0])
+            BICM_int[1]=np.sort(BICM_int[1])
+            BICM_int=np.ravel(BICM_int,order='C')
+            print(BICM_int)
+            
         elif type==3:#3:No intlv(Block intlv in arikan polar decoder) 
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             BICM_int=np.ravel(BICM_int,order='F')
         elif type==4:#4:rand intlv
-            random.shuffle(BICM_int)
-        elif type==2:#2:Block intlv(No intlv in arikan polar decoder) 
-            tmp=np.arange(N//2,dtype=int)
+            tmp,_=make_BICM(N)
+            BICM_int=BICM_int[tmp]
+        elif type==5:#2:Block intlv(No intlv in arikan polar decoder) 
+            tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
             random.shuffle(tmp)
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-            BICM_int[0]=BICM_int[0][tmp]
-            BICM_int[1]=BICM_int[1][tmp]
+            for i in range (int(np.log2(M**(1/2)))):
+                BICM_int[i]=BICM_int[i][tmp]
             BICM_int=np.ravel(BICM_int,order='C')
-        elif type==5:
+        elif type==6:
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-            random.shuffle(BICM_int[0])
-            random.shuffle(BICM_int[1])
+            for i in range (int(np.log2(M**(1/2)))):
+                tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
+                random.shuffle(tmp)
+                BICM_int[i]=BICM_int[i][tmp]
             BICM_int=np.ravel(BICM_int,order='C')
             
         else:
@@ -119,7 +126,7 @@ class Mysystem_Polar:
             
         BICM_deint=np.argsort(BICM_int)
         
-        np.savetxt("deint",BICM_deint,fmt='%.0f')
+        #np.savetxt("deint",BICM_deint,fmt='%.0f')
         
         #print(BICM_int)
         #print(BICM_deint)

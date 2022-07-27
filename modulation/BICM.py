@@ -5,6 +5,8 @@ import os
 def srandom_interleave(N,M):
         
     mod=(M)**(1/2)//2
+    print("mod")
+    print(mod)
     s=math.floor(math.sqrt(N))-5
     print(s)
     #step 1 generate random sequence
@@ -63,7 +65,7 @@ def srandom_interleave(N,M):
     
     return heap
 
-def make_BICM(N,M):
+def make_BICM(N,M=4):
     
     #make BICM directory
     # directory make

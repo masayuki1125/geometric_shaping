@@ -2,13 +2,13 @@ import ray
 import pickle
 import sys
 import numpy as np
-from main import Mysystem
+from main_sep import Mysystem
 import itertools
 import multiprocessing
 
-a=multiprocessing.cpu_count()
-ray.init(num_cpus=a*4//10)
-#ray.init()
+#a=multiprocessing.cpu_count()
+#ray.init(num_cpus=a//4)
+ray.init()
 
 @ray.remote
 def output(dumped,EbNodB):
@@ -57,8 +57,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=8
-        self.EbNodB_end=8.5
+        self.EbNodB_start=5
+        self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力

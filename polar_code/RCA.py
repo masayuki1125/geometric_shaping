@@ -128,13 +128,14 @@ class RCA():
             #print(tmp)
             gamma=np.tile(tmp,N//int(log2(M)))
             
+            
+            
             #tmp=np.zeros(len(gamma))
             #n=int(log2(N))
             #bit reversal order
             #for i in range(len(tmp)):
                 #tmp[i]=gamma[self.reverse(i,n)]
         
- 
         xi=log(gamma)
         
         if BICM==True:
@@ -178,7 +179,7 @@ class RCA():
         return frozen_bits,info_bits
     
     def main_const_sep(self,N,K,design_SNR,M=2,**kwargs):
-        
+        #print("N",N)
         '''
         input:
         N:codeword length
@@ -223,7 +224,7 @@ class RCA():
                 tmp[a]=self.calc_J_inv(tmp[a])
             #print(tmp)
             gamma=np.tile(tmp,N//int(log2(M)))
-            
+          
             #tmp=np.zeros(len(gamma))
             #n=int(log2(N))
             #bit reversal order
@@ -244,6 +245,7 @@ class RCA():
         n=int(log2(N))
         
         num_of_ch=int(np.log2(M**(1/2)))
+        #print(num_of_ch)
         
         for i in range(num_of_ch-1,n):
             J = 2**(n-i)
