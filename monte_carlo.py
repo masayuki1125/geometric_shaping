@@ -2,7 +2,7 @@ import ray
 import pickle
 import sys
 import numpy as np
-from main_sep import Mysystem
+from main_sep_AWGN import Mysystem
 import itertools
 import multiprocessing
 
@@ -23,8 +23,8 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**4
-    MAX_ERR=10
+    MAX_ALL=10**3
+    MAX_ERR=1
     count_bitall=0
     count_biterr=0
     count_all=0
@@ -57,7 +57,7 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=5
+        self.EbNodB_start=0
         self.EbNodB_end=10
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 

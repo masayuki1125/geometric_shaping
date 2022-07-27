@@ -104,10 +104,25 @@ class RCA():
             soft_output=kwargs.get("soft_output")
         else:
             soft_output=False
+            
+        if kwargs.get('channel_level') is not None:
+            channel_level=kwargs.get("channel_level")
+        else:
+            channel_level=False
         
         #check if mapping is the divisor of N
         if N%int(log2(M))!=0:
             print("mapping error")
+            
+        elif channel_level!=False:
+            tmp=make_BMI_list(design_SNR,M)
+            #print(tmp)
+            for a in range(len(tmp)):
+                tmp[a]=self.calc_J_inv(tmp[a])
+                
+            tmp=tmp[channel_level]
+            
+            gamma=tmp*np.ones(N)
         
         if M==2:
             #print("BPSK")
@@ -199,12 +214,27 @@ class RCA():
             soft_output=kwargs.get("soft_output")
         else:
             soft_output=False
+            
+        if kwargs.get('channel_level') is not None:
+            channel_level=kwargs.get("channel_level")
+        else:
+            channel_level=False
         
         #check if mapping is the divisor of N
         if N%int(log2(M))!=0:
             print("mapping error")
+            
+        elif channel_level!=False:
+            tmp=make_BMI_list(design_SNR,M)
+            #print(tmp)
+            for a in range(len(tmp)):
+                tmp[a]=self.calc_J_inv(tmp[a])
+                
+            tmp=tmp[channel_level]
+            
+            gamma=tmp*np.ones(N)
         
-        if M==2:
+        elif M==2:
             #print("BPSK")
             gamma=10**(design_SNR/10)#BPSK
             gamma=gamma*np.ones(N)
