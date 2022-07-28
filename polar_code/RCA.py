@@ -122,6 +122,9 @@ class RCA():
                 
             tmp=tmp[channel_level]
             
+            #print("pass the each channel level construction")
+            #print("channel level is",channel_level)
+            
             gamma=tmp*np.ones(N)
         
         if M==2:

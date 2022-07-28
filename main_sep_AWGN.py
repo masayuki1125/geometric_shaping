@@ -36,7 +36,7 @@ class Mysystem:
         
         self.type=1 # fixed
         
-        self.channel_level=0#どのレベルのチャネルを使うのか特定する
+        self.channel_level=3#どのレベルのチャネルを使うのか特定する
         
         #for construction
         if const_var==1:
@@ -70,7 +70,9 @@ class Mysystem:
             
             self.ec+=[polar_encode.encoding(self.cd[i])]
             self.dc+=[polar_decode.decoding(self.cd[i],self.ec[i])]
-            
+        
+        print("R",self.cd[self.channel_level].R)
+         
         #get decoder var
         self.decoder_ver=self.cd[0].decoder_ver
         #modulation
@@ -127,8 +129,8 @@ class Mysystem:
             if i==self.channel_level:
                 info,cwd_sep=self.ec[self.channel_level].polar_encode()
             else:
-                #cwd_sep=np.random.randint(0,2,self.N)
-                cwd_sep=np.zeros(self.N,dtype=int)
+                cwd_sep=np.random.randint(0,2,self.N)
+                #cwd_sep=np.zeros(self.N,dtype=int)
             #print(len(info_sep))
             cwd=np.concatenate([cwd,cwd_sep])
         
