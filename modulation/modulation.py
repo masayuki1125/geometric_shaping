@@ -71,8 +71,11 @@ class Modem:
             mb = self.de2bin(m)
             dict_out = {k: v for k, v in zip(mb, s)}
         elif self.bin_input == True and self.gray_map == True:
+            print("pass")
             mg = self.__gray_encoding(m)
+            print(mg)
             mgb = self.de2bin(mg)
+            print(mgb)
             dict_out = {k: v for k, v in zip(mgb, s)}
         return dict_out
 
@@ -286,6 +289,7 @@ class PSKModem(Modem):
         self.code_book = self.create_constellation(self.m, self.s)
         self.zeros, self.ones = self.llr_preparation()
 
+    '''
     def de2bin(self, decs):
         """ Converts values from decimal to binary representation.
         If the input is binary, the conversion from binary to decimal should be done before.
@@ -307,6 +311,21 @@ class PSKModem(Modem):
         else:
             bin_out = [np.binary_repr(d, width=self.N)
                        for d in decs]
+        return bin_out
+    '''
+    
+    def de2bin(self, decs):
+        """ Converts values from decimal to binary representation.
+        Parameters
+        ----------
+        decs : list of ints
+            Input decimal values.
+        Returns
+        -------
+        bin_out : list of ints
+            Output binary sequences.
+        """
+        bin_out = [np.binary_repr(d, width=self.N) for d in decs]
         return bin_out
 
     def bin2de(self, bin_in):
@@ -382,6 +401,8 @@ class PSKModem(Modem):
         plt.title(M + 'PSK, phase rotation: ' + str(round(self.phi, 5)) + \
                   ', Mapping: ' + mapping + ', Input: ' + inputs)
         plt.show()
+        plt.savefig("psk")
+        
 
 
 class QAMModem(Modem):
@@ -529,17 +550,24 @@ About
 #%%
 if __name__=='__main__':
     
-
-    modem=QAMModem(16)
+    #modem1=QAMModem(256)
+    #modem2=PSKModem(256)
+    #print(modem1.code_book)
+    #print(modem2.code_book)
+    modem2=PSKModem(4)
+    print(modem2.code_book)
+    '''
+    modem=PSKModem(256)
     modem.plot_const()
     print(modem.ones)
-    info=np.array([0,0,1,1])
-    print(modem.modulate(info))
+    #info=np.array([0,0,1,1])
+    #print(modem.modulate(info))
+    modem.plot_const
     
     
 #%%
     
-    '''
+    
     def add_AWGN(constellation,No):
 
         # AWGN雑音の生成
@@ -559,7 +587,7 @@ if __name__=='__main__':
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo 
     M=16
-    modem=QAMModem(M)
+    modem=PSKModem(M)
     K=int(math.log2(M))*100
     MAX_ERR=100
     '''

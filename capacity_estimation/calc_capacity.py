@@ -40,17 +40,24 @@ def add_AWGN_GPU(constellation,No):
 
 
 def make_AMI(EsNodB,M):
+    modem_ver=1 #0:QAMModem 1:PSKModem
+    
   
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=100000
+    count_num=1000000
 
     #make info matrices
     info=cp.random.randint(0,M,count_num)
 
     #make constellation
     if M!=2:
-        modem=QAMModem(M)
+        if modem_ver==0:
+            modem=QAMModem(M)
+        elif modem_ver==1:
+            modem=PSKModem(M)
+        else:
+            print("modem version error")
     
     
         tmp=modem.code_book
@@ -81,101 +88,115 @@ def make_AMI(EsNodB,M):
     return res
 
 def make_BMI(EsNodB,M):
-    each_res=True #default:false
+    modem_ver=1 #0:QAMModem 1:PSKModem
+    each_res=False #default:false
     
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=10000
+    count_num=1
         
     result=0
-    all_count=count_num
     
     if each_res==True:
         result=np.zeros(int(math.log2(M)))
     else:    
         result=0
     
-    for _ in range(100):
-        #make info matrices
-        info=cp.random.randint(0,M,count_num)
-        #rint(info)
-        #info=cp.zeros(count_num,dtype=int)
-        #make constellation
+    #make info matrices
+    info=cp.random.randint(0,M,count_num)
+    #print(info)
+    #from IPython.core.debugger import Pdb; Pdb().set_trace()
+    #info=cp.zeros(count_num,dtype=int)
+    #make constellation
+    if modem_ver==0:
         modem=QAMModem(M)
-        tmp=modem.code_book
-        #print(modem.code_book)
-        symbol=cp.zeros(M,dtype=complex)
-        for i in tmp:
-            symbol[modem.bin2de(i)]=tmp[i]
-            #print(modem.bin2de(i))
-            #print(tmp[i])
-            #print("next")
-
-        mat_symbol=cp.tile(symbol,(count_num,1))
-        const=cp.take_along_axis(mat_symbol,info[:,None],axis=1)[:,0]
-        #print(const)
-        RX_const=add_AWGN_GPU(const,No)
-
-        #bitごとの0のシンボルと1のシンボルを出す
-        ones=cp.array(modem.ones)
-        zeros=cp.array(modem.zeros)
-        ones_zeros=cp.stack([zeros,ones])
-        #print(ones_zeros)
-        #print(ones)
-        #print(zeros)
-        #for a,b in zip(ones,zeros):
-            #print("zip")
-            #print(a,b)
-        #print(info)
-        #print(ones)
-        H=0
-        res=np.zeros(int(math.log2(M)))
-        for i in range(0,int(math.log2(M)))[::-1]:
-            ith_bits=((info)//(2**i))%2
-            #print("bits",ith_bits[0:30])
-            #print(const[0:10])
-            
-            ones_zeros_i=ones_zeros[:,int(math.log2(M))-i-1,:] #ここのインデックスが間違っていた
-            #print(ones_zeros.shape)#(2,log2(M),M/2)
-            #print(ones_zeros_i.shape)#(2,M/2)
-            
-            #print(ones_zeros_i) #check#ここが間違っていた
-            
-            mat_ones_zeros_i=np.tile(ones_zeros_i,(len(ith_bits),1,1))
-            #print(mat_ones_zeros_i.shape) #(count_num,2,M/2)
-            #print(mat_ones_zeros_i[0])
-            
-            res_ones_zeros_i=cp.take_along_axis(mat_ones_zeros_i,ith_bits[:,None,None],axis=1)[:,0,:].T
-            #print(res_ones_zeros_i.shape) #(count_num,1,M/2)
-            #print(res_ones_zeros_i)
-            
-            del mat_ones_zeros_i
-            
-            #res_ones_zeros_i=res_ones_zeros_i[:,0,:]
-            #print(res_ones_zeros_i.shape) #(count_num,M/2)
-            
-            #res_ones_zeros_i=res_ones_zeros_i.T
-            #print(RX_const[0])
-            num=cp.sum(cp.exp(-1*cp.abs(np.tile(RX_const,(len(symbol),1))-symbol.reshape(-1,1))**2/No),axis=0)
-            den=cp.sum(cp.exp(-1*cp.abs(np.tile(RX_const,(len(ones[0]),1))-res_ones_zeros_i)**2/No),axis=0)
-            H=cp.sum(cp.log2(num/den))
-            tmp=1-H/count_num
-            #print(tmp)
-            res[i]+=tmp
-
-        #H/=count_num
-        #res=math.log2(M)-H
-        #print(res)
+    elif modem_ver==1:
+        modem=PSKModem(M)
+    else:
+        print("modem version error")
         
-        if each_res==True:
-            res=res[::-1]
-        else:    
-            res=np.sum(res)
+    tmp=modem.code_book
+    
+    symbol=cp.zeros(M,dtype=complex)
+    for i in tmp:
+        symbol[modem.bin2de(i)]=tmp[i]
+        #print(modem.bin2de(i))
+        #print(tmp[i])
+        #print("next")
+    
+    mat_symbol=cp.tile(symbol,(count_num,1))
+    const=cp.take_along_axis(mat_symbol,info[:,None],axis=1)[:,0]
+    #print(const)
+    #from IPython.core.debugger import Pdb; Pdb().set_trace()
+    RX_const=add_AWGN_GPU(const,No)
+
+    #bitごとの0のシンボルと1のシンボルを出す
+    ones=cp.array(modem.ones)
+    zeros=cp.array(modem.zeros)
+    ones_zeros=cp.stack([zeros,ones])
+    #print(ones_zeros)
+    #from IPython.core.debugger import Pdb; Pdb().set_trace()
+    #print(ones)
+    #print(zeros)
+    
+    #for a,b in zip(ones,zeros):
+        #print("zip")
+        #print(a,b)
+    #print(info)
+    #print(ones)
+    H=0
+    res=np.zeros(int(math.log2(M)))
+    
+    for i in range(0,int(math.log2(M)))[::-1]:
+        ith_bits=((info)//(2**i))%2
+        #print("bits",ith_bits[0:30])
+        #print(const[0:10])
         
-        result+=res
+        ones_zeros_i=ones_zeros[:,int(math.log2(M))-i-1,:] #ここのインデックスが間違っていた
+        #print(ones_zeros.shape)#(2,log2(M),M/2)
+        #print(ones_zeros_i.shape)#(2,M/2)
         
-    result/=(all_count//count_num)
-    return result
+        #print(ones_zeros_i) #check#ここが間違っていた
+        #from IPython.core.debugger import Pdb; Pdb().set_trace()
+        
+        mat_ones_zeros_i=np.tile(ones_zeros_i,(len(ith_bits),1,1))
+        #print(mat_ones_zeros_i.shape) #(count_num,2,M/2)
+        #print(mat_ones_zeros_i[0])
+        
+        res_ones_zeros_i=cp.take_along_axis(mat_ones_zeros_i,ith_bits[:,None,None],axis=1)[:,0,:].T
+        #print(res_ones_zeros_i.shape) #(count_num,1,M/2)
+        #print(res_ones_zeros_i)
+        #print(res_ones_zeros_i)
+        #del mat_ones_zeros_i
+        
+        #res_ones_zeros_i=res_ones_zeros_i[:,0,:]
+        #print(res_ones_zeros_i.shape) #(count_num,M/2)
+        
+        #res_ones_zeros_i=res_ones_zeros_i.T
+        #print(RX_const[0])
+        #print(cp.exp(-1*cp.abs(np.tile(RX_const,(len(symbol),1))-symbol.reshape(-1,1))**2/No))
+        #print(cp.exp(-1*cp.abs(np.tile(RX_const,(len(ones[0]),1))-res_ones_zeros_i)**2/No))
+        
+        num=cp.sum(cp.exp(-1*cp.abs(np.tile(RX_const,(len(symbol),1))-symbol.reshape(-1,1))**2/No),axis=0)
+        den=cp.sum(cp.exp(-1*cp.abs(np.tile(RX_const,(len(ones[0]),1))-res_ones_zeros_i)**2/No),axis=0)
+        #print("num",num)
+        #print("den",den)
+        #from IPython.core.debugger import Pdb; Pdb().set_trace()
+        H=cp.sum(cp.log2(num/den))
+        tmp=1-H/count_num
+        #print(tmp)
+        res[i]+=tmp
+
+    #H/=count_num
+    #res=math.log2(M)-H
+    #print(res)
+    
+    if each_res==True:
+        res=res[::-1]
+    else:    
+        res=np.sum(res)
+
+    return res
 
 def make_BMI_list(EsNodB,M):
     # directory make
@@ -209,7 +230,7 @@ def make_BMI_list(EsNodB,M):
 if __name__=='__main__':
     
     SNR_range=np.arange(0,20,0.5)
-    M_list=[2**(2**4)]
+    M_list=[4,16,256]
     
     '''
     BMI_list=np.zeros(len(SNR_range))
@@ -218,30 +239,35 @@ if __name__=='__main__':
             make_BMI_list(EsNodB,M)
     '''
     
-    #print(SNR_range)
+    print(SNR_range)
 
     BMI_list=np.zeros(len(SNR_range))
 
     for M in M_list:
-        '''
         AMI_list=np.zeros(len(SNR_range))
-        filename="AMI_{}QAM".format(M)
+        filename="AMI_{}PSK".format(M)
         for i,EsNodB in enumerate(SNR_range):
             AMI_list[i]=make_AMI(EsNodB,M)
             
             with open(filename,'w') as f:
                 for i in range(len(SNR_range)):
-                    print(str(SNR_range[i]),str(AMI_list[i]),file=f)
-        '''            
-        BMI_list=np.zeros(len(SNR_range))
-        filename="BMI_{}QAM".format(M)
+                    print(str(SNR_range[i]),str(AMI_list[i]),file=f)       
+                    
+        BMI_list_a=np.zeros(len(SNR_range))
+        #BMI_list_b=np.zeros(len(SNR_range))
+        filename="BMI_{}PSK".format(M)
         for i,EsNodB in enumerate(SNR_range):
-            BMI_list[i]=make_BMI(EsNodB,M)
-            
-            with open(filename,'w') as f:
-                for i in range(len(SNR_range)):
-                    print(str(SNR_range[i]),str(BMI_list[i]),file=f)
-
+            #BMI_list[i]=make_BMI(EsNodB,M)
+            BMI_list_a[i]=make_BMI(EsNodB,M)
+            #print(make_BMI(EsNodB,M))
+        
+        #print(BMI_list_a)
+        #print(BMI_list_b)
+         
+        with open(filename,'w') as f:
+            for i in range(len(SNR_range)):
+                #print(str(SNR_range[i]),str(BMI_list[i]),file=f)
+                print(str(SNR_range[i]),str(BMI_list_a[i]),file=f)
 
         
 
