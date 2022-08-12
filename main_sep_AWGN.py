@@ -33,11 +33,11 @@ class Mysystem:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         const_var=3 #1:MC 2:iGA 3:RCA
-        
         self.type=1 # fixed
+        self.modem_num=1 #0:QAM 1:PSK
         
-        self.channel_level=3#どのレベルのチャネルを使うのか特定する
-        
+        self.channel_level=7#どのレベルのチャネルを使うのか特定する
+        self.gray_mapping=False
         #for construction
         if const_var==1:
             self.const=monte_carlo_construction.monte_carlo()
@@ -50,7 +50,10 @@ class Mysystem:
             self.const_name="_RCA"
         
         #ENCの数
-        self.enc_num=int(np.log2(M**(1/2)))
+        if self.gray_mapping==True:
+            self.enc_num=int(np.log2(M**(1/2)))
+        elif self.gray_mapping==False:
+            self.enc_num=int(np.log2(M))
         
        #coding
        #すべての符号化器で一応符号化する
@@ -76,7 +79,10 @@ class Mysystem:
         #get decoder var
         self.decoder_ver=self.cd[0].decoder_ver
         #modulation
-        self.modem=modulation.QAMModem(self.M)
+        if self.modem_num==0:
+            self.modem=modulation.QAMModem(self.M)
+        elif self.modem_num==1:
+            self.modem=modulation.PSKModem(self.M)
         #channel
         self.ch=AWGN._AWGN()
         
@@ -84,7 +90,12 @@ class Mysystem:
     
     def make_filename(self):
         #filename
-        filename="polar_{}_{}_{}QAM".format(self.N,self.K,self.M)
+        filename="polar_{}_{}_{}".format(self.N,self.K,self.M)
+        if self.modem_num==0:
+            filename+="QAM"
+        elif self.modem_num==1:
+            filename+="PSK"
+        
         filename=filename+self.const_name
         if self.cd[0].systematic_polar==True:
             filename="systematic_"+filename
@@ -107,9 +118,9 @@ class Mysystem:
         #すべてのデコーダ一律で凍結ビットを得る
         if self.decoder_ver==2:
             self.CRC_len=len(self.cd[0].CRC_polynomial)-1  
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K+self.CRC_len,EsNodB,self.M,channel_level=self.channel_level)
+            frozen_bits,info_bits=self.const.main_const_unif(self.N,self.K+self.CRC_len,EsNodB,self.M,channel_level=self.channel_level)
         else:
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,channel_level=self.channel_level)
+            frozen_bits,info_bits=self.const.main_const_unif(self.N,self.K,EsNodB,self.M,channel_level=self.channel_level)
         
         #change frozen_bits and info_bits         
         self.cd[self.channel_level].design_SNR=EsNodB    
@@ -134,7 +145,12 @@ class Mysystem:
             #print(len(info_sep))
             cwd=np.concatenate([cwd,cwd_sep])
         
-        cwd=np.reshape(cwd,[int(np.log2(self.M**(1/2))),self.N],order='C')
+        if self.gray_mapping==True:
+            block_intlv_order=int(np.log2(self.M**(1/2)))
+        elif self.gray_mapping==False:
+            block_intlv_order=int(np.log2(self.M))
+        
+        cwd=np.reshape(cwd,[block_intlv_order,self.N],order='C')
         cwd=cwd.ravel(order="F")
         
         TX_conste=self.modem.modulate(cwd)
@@ -142,7 +158,7 @@ class Mysystem:
         RX_conste=self.ch.add_AWGN(TX_conste,No)
         Lc=self.modem.demodulate(RX_conste,No)
         
-        Lc=np.reshape(Lc,[int(np.log2(self.M**(1/2))),self.N],order='F')[self.channel_level]
+        Lc=np.reshape(Lc,[block_intlv_order,self.N],order='F')[self.channel_level]
         
         EST_info=self.dc[self.channel_level].polar_decode(Lc)
         
@@ -150,9 +166,9 @@ class Mysystem:
     
 if __name__=='__main__':
     K=512
-    M=256 #symbol number
+    M=16 #symbol number
     
-    EsNodB=20.0
+    EsNodB=10.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

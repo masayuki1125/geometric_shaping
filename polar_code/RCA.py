@@ -36,21 +36,53 @@ class RCA():
         res=tmp[0:l]
         return res
     
-    def main_const_unif(self,N,K,design_SNR,M=2):
-        print(N)
-        print(K)
+    def main_const_unif(self,N,K,design_SNR,M=2,**kwargs):
+        #print("pass")
+        #extract from dictionary 
+        if kwargs.get('BICM_int') is not None:
+            BICM_int=kwargs.get("BICM_int")
+            BICM_deint=np.argsort(BICM_int)
+            BICM=True
+        else:
+            BICM=False
         
-        xi=np.zeros(N)
+        if kwargs.get('soft_output') is not None:
+            soft_output=kwargs.get("soft_output")
+        else:
+            soft_output=False
+            
+        if kwargs.get('channel_level') is not None:
+            channel_level=kwargs.get("channel_level")
+            #print(channel_level)
+        else:
+            channel_level=float('nan')
         
-        if M==2:
+        if np.isnan(channel_level)==False:
+            #print("pass2")
+            tmp=make_BMI_list(design_SNR,M)
+            #print(tmp)
+            for a in range(len(tmp)):
+                tmp[a]=self.calc_J_inv(tmp[a])
+                
+            gamma=tmp[channel_level]
+            
+            #print("pass the each channel level construction")
+            #print("channel level is",channel_level)
+        
+        elif M==2:
             #print("BPSK")
             gamma=10**(design_SNR/10)#BPSK
+        
+        elif M==4:
+            #print("QPSK")
+            gamma=10**(design_SNR/10)*1/2
             
         else:
             #print("QPSK")
             dmin=(6/(M-1))**(1/2)
             gamma=10**(design_SNR/10)*dmin/2 #QPSK(sqrt(2))
             
+        xi=np.zeros(N)
         xi[0]=np.log(gamma)
         
         n=int(log2(N))
@@ -66,7 +98,7 @@ class RCA():
                 xi[j+J//2]=xi0+log(2)
                 #from IPython.core.debugger import Pdb; Pdb().set_trace()
 
-        print(xi)
+        #print(xi)
 
         tmp=np.argsort(xi)
         frozen_bits=np.sort(tmp[:N-K])
@@ -116,7 +148,7 @@ class RCA():
             
         elif channel_level!=False:
             tmp=make_BMI_list(design_SNR,M)
-            #print(tmp)
+            print(tmp)
             for a in range(len(tmp)):
                 tmp[a]=self.calc_J_inv(tmp[a])
                 
@@ -426,8 +458,8 @@ class RCA():
             p37
             (4.5)
             '''
-            if I>1 or I<0:
-                print("I is err")
+            #if I>1 or I<0:
+                #print("I is err")
             
             a1=1.09542
             b1=0.214217

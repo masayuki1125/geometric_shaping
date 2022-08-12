@@ -23,8 +23,8 @@ def output(dumped,EbNodB):
     np.random.seed()
 
     #prepare some constants
-    MAX_ALL=10**3
-    MAX_ERR=1
+    MAX_ALL=10**4
+    MAX_ERR=10
     count_bitall=0
     count_biterr=0
     count_all=0

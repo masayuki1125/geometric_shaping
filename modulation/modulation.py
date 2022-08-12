@@ -71,11 +71,11 @@ class Modem:
             mb = self.de2bin(m)
             dict_out = {k: v for k, v in zip(mb, s)}
         elif self.bin_input == True and self.gray_map == True:
-            print("pass")
+            #print("pass")
             mg = self.__gray_encoding(m)
-            print(mg)
+            #print(mg)
             mgb = self.de2bin(mg)
-            print(mgb)
+            #print(mgb)
             dict_out = {k: v for k, v in zip(mgb, s)}
         return dict_out
 
@@ -312,6 +312,29 @@ class PSKModem(Modem):
             bin_out = [np.binary_repr(d, width=self.N)
                        for d in decs]
         return bin_out
+
+    def bin2de(self, bin_in):
+        """ Converts values from binary to decimal representation.
+        Parameters
+        ----------
+        bin_in : list of ints
+            Input binary values.
+        Returns
+        -------
+        dec_out : list of ints
+            Output decimal values.
+        """
+
+        dec_out = []
+        N = self.N  # bits per modulation symbol (local variables are tiny bit faster)
+        Ndecs = int(len(bin_in) / N)  # length of the decimal output
+        for i in range(Ndecs):
+            bin_seq = bin_in[i * N:i * N + N]  # binary equivalent of the one decimal value
+            str_o = "".join([str(int(b)) for b in bin_seq])  # binary sequence to string
+            if N % 2 == 0:
+                str_o = str_o[::-1]
+            dec_out.append(int(str_o, 2))
+        return dec_out
     '''
     
     def de2bin(self, decs):
@@ -346,8 +369,6 @@ class PSKModem(Modem):
         for i in range(Ndecs):
             bin_seq = bin_in[i * N:i * N + N]  # binary equivalent of the one decimal value
             str_o = "".join([str(int(b)) for b in bin_seq])  # binary sequence to string
-            if N % 2 == 0:
-                str_o = str_o[::-1]
             dec_out.append(int(str_o, 2))
         return dec_out
 
@@ -529,9 +550,10 @@ class QAMModem(Modem):
         plt.grid()
         plt.axvline(linewidth=1.0, color='black')
         plt.axhline(linewidth=1.0, color='black')
-        #plt.axis([-limits, limits, -limits, limits])
+        plt.axis([-limits, limits, -limits, limits])
         plt.title(M + '-QAM, Mapping: ' + mapping + ', Input: ' + inputs)
         plt.show()
+        print("pass2")
         plt.savefig("qam")
 '''
 © 2022 GitHub, Inc.
@@ -550,22 +572,26 @@ About
 #%%
 if __name__=='__main__':
     
-    #modem1=QAMModem(256)
-    #modem2=PSKModem(256)
-    #print(modem1.code_book)
-    #print(modem2.code_book)
+    modem1=QAMModem(4)
+    modem1.plot_const()
+    '''
+    modem2=PSKModem(16)
+    print(modem1.code_book)
+    print(modem2.code_book)
+    #from IPython.core.debugger import Pdb; Pdb().set_trace()
     modem2=PSKModem(4)
     print(modem2.code_book)
-    '''
-    modem=PSKModem(256)
+    
+    modem=PSKModem(16)
     modem.plot_const()
     print(modem.ones)
     #info=np.array([0,0,1,1])
     #print(modem.modulate(info))
-    modem.plot_const
+    '''
+    print("pass")
     
     
-#%%
+    '''    
     
     
     def add_AWGN(constellation,No):
