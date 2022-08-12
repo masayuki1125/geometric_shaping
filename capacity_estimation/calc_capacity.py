@@ -212,7 +212,7 @@ def make_BMI_list(EsNodB,M):
     except FileExistsError:
       pass
       
-    filename="{}PSK_{}".format(M,EsNodB)
+    filename="{}QAM_{}".format(M,EsNodB)
     
     #if file exists, then load txt file
     filename=dir_name+"/"+filename

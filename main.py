@@ -34,7 +34,7 @@ class Mysystem_Polar:
         self.N=self.K*2
         const_var=3 #1:MC 2:iGA 3:RCA
         
-        self.type=4#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=5#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         
         #for construction
         if const_var==1:
@@ -62,8 +62,8 @@ class Mysystem_Polar:
         self.filename=self.make_filename()
         
     def make_filename(self):
-        #filename
-        filename="polar_{}_{}_{}QAM".format(self.N,self.K,self.M)
+        filename="{}QAM".format(self.M)
+        #filename="polar_{}_{}_{}QAM".format(self.N,self.K,self.M)
         filename=filename+self.const_name
         if self.cd.systematic_polar==True:
             filename="systematic_"+filename
@@ -90,47 +90,41 @@ class Mysystem_Polar:
         BICM_int=BICM_int[bit_reversal_sequence]
         
         if type==1:#1:separated scheme 
+            print("err type1")
+            pass #specific file is needed
+        elif type==2:#2:No intlv in arikan polar decoder
             pass
-        elif type==2:#2:Block intlv(No intlv in arikan polar decoder) 
-            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-            BICM_int[0]=np.sort(BICM_int[0])
-            BICM_int[1]=np.sort(BICM_int[1])
-            BICM_int=np.ravel(BICM_int,order='C')
-            print(BICM_int)
+            #BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            #BICM_int[0]=np.sort(BICM_int[0])
+            #BICM_int[1]=np.sort(BICM_int[1])
+            #BICM_int=np.ravel(BICM_int,order='C')
+            #print(BICM_int)
             
-        elif type==3:#3:No intlv(Block intlv in arikan polar decoder) 
+        elif type==3:#3:Block intlv in arikan polar decoder
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             BICM_int=np.ravel(BICM_int,order='F')
         elif type==4:#4:rand intlv
             tmp,_=make_BICM(N)
             BICM_int=BICM_int[tmp]
-        elif type==5:#2:Block intlv(No intlv in arikan polar decoder) 
-            tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
-            random.shuffle(tmp)
+        elif type==5:#2:No intlv +rand intlv for each channel
+            tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             for i in range (int(np.log2(M**(1/2)))):
                 BICM_int[i]=BICM_int[i][tmp]
             BICM_int=np.ravel(BICM_int,order='C')
-        elif type==6:
-            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-            for i in range (int(np.log2(M**(1/2)))):
-                tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
-                random.shuffle(tmp)
-                BICM_int[i]=BICM_int[i][tmp]
-            BICM_int=np.ravel(BICM_int,order='C')
+        elif type==6:#凍結ビットを低SNRに設定する
+            print("err type6")
+            pass#specific file is needed
+        elif type==7:#compound polar codes
+            print("err type7")
+            pass #specific file is needed
             
         else:
             print("interleaver type error")
-            
-        
-            
         BICM_deint=np.argsort(BICM_int)
-        
         #np.savetxt("deint",BICM_deint,fmt='%.0f')
-        
         #print(BICM_int)
-        #print(BICM_deint)
-        
+        #print(BICM_deint) 
         return BICM_int,BICM_deint
            
     def main_func(self,EsNodB):

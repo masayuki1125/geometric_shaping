@@ -34,7 +34,7 @@ class Mysystem:
         self.N=self.K*2
         const_var=3 #1:MC 2:iGA 3:RCA
         self.type=1 # fixed
-        self.modem_num=1 #0:QAM 1:PSK
+        self.modem_num=0 #0:QAM 1:PSK
         
         self.channel_level=7#どのレベルのチャネルを使うのか特定する
         self.gray_mapping=False

@@ -2,13 +2,13 @@ import ray
 import pickle
 import sys
 import numpy as np
-from main_sep_AWGN import Mysystem
+from main import Mysystem
 import itertools
 import multiprocessing
 
-#a=multiprocessing.cpu_count()
-#ray.init(num_cpus=a//4)
-ray.init()
+a=multiprocessing.cpu_count()
+ray.init(num_cpus=a//10)
+#ray.init()
 
 @ray.remote
 def output(dumped,EbNodB):
@@ -178,7 +178,7 @@ if __name__=="__main__":
     K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[256]
+    M_list=[16]
     result_ids_array=[]
     
     
