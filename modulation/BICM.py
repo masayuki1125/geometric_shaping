@@ -69,7 +69,8 @@ def make_BICM(N,M=4):
     
     #make BICM directory
     # directory make
-    current_directory="/home/kaneko/Dropbox/programming/geometric_shaping/modulation"
+    home=os.environ['HOME']
+    current_directory=home+"/Dropbox/programming/geometric_shaping/modulation"
     #current_directory=os.getcwd()
     dir_name="BICM_interleaver"
     dir_name=current_directory+"/"+dir_name

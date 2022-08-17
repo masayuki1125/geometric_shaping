@@ -1,10 +1,10 @@
-import ray
-import pickle
-import sys
+#import ray
+#import pickle
+#import sys
 import numpy as np
-import math
-import os
-import random
+#import math
+#import os
+#import random
 #my module
 from LDPC_code import LDPC_construction
 from LDPC_code import LDPC_encode
@@ -23,6 +23,8 @@ from modulation.BICM import make_BICM
 from modulation.BICM import BICM_ID
 from channel import AWGN
 
+from capacity_estimation.calc_capacity import make_BMI_list
+
 FEC=1#1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
@@ -33,8 +35,8 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         const_var=3 #1:MC 2:iGA 3:RCA
-        
-        self.type=5#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=2#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.adaptive_intlv=False #default:false
         
         #for construction
         if const_var==1:
@@ -79,15 +81,14 @@ class Mysystem_Polar:
         
         #output filename to confirm which program I run
         print(filename)
-        
         return filename
         
     def make_BICM_int(self,N,M,type):
         
         BICM_int=np.arange(N,dtype=int)
         #modify BICM int from simplified to arikan decoder order
-        bit_reversal_sequence=self.cd.bit_reversal_sequence
-        BICM_int=BICM_int[bit_reversal_sequence]
+        #bit_reversal_sequence=self.cd.bit_reversal_sequence
+        #BICM_int=BICM_int[bit_reversal_sequence]
         
         if type==1:#1:separated scheme 
             print("err type1")
@@ -113,7 +114,7 @@ class Mysystem_Polar:
                 BICM_int[i]=BICM_int[i][tmp]
             BICM_int=np.ravel(BICM_int,order='C')
         elif type==6:#凍結ビットを低SNRに設定する
-            print("err type6")
+            self.adaptive_intlv=True
             pass#specific file is needed
         elif type==7:#compound polar codes
             print("err type7")
@@ -126,8 +127,66 @@ class Mysystem_Polar:
         #print(BICM_int)
         #print(BICM_deint) 
         return BICM_int,BICM_deint
+    
+    #以下の関数はType6用の関数
+    def construction(self,BICM_int,EsNodB):
+        frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=BICM_int)
+        
+        #print(frozen_bits)
+        BICM_int=np.concatenate([frozen_bits,info_bits])
+        tmp=make_BMI_list(EsNodB,self.M)
+        argtmp=np.argsort(tmp[:len(tmp)//2])
+        #print(tmp)
+        #print(argtmp)
+        BICM_int=np.reshape(BICM_int,[int(np.log2(self.M**(1/2))),-1],order='C')
+        BICM_int=BICM_int[argtmp,:]
+        BICM_int=np.ravel(BICM_int,order='F')
+        self.interleaver_check(EsNodB,BICM_int,frozen_bits)
+        return BICM_int
+    
+    def interleaver_check(self,EsNodB,BICM_int,frozen_bits):
+        BICM_deint=np.argsort(BICM_int)
+        tmp=make_BMI_list(EsNodB,self.M)
+        for a in range(len(tmp)):
+            tmp[a]=self.const.calc_J_inv(tmp[a])
+        #print(tmp)
+        gamma=np.tile(tmp,self.N//int(np.log2(self.M)))
+        xi=np.log(gamma)
+        xi=xi[BICM_deint]
+        if np.all(np.sort(np.argsort(xi)[:len(xi)//2])==frozen_bits)==False:
+            print("interleaver error!!")
+    
+    def adaptive_BICM(self,EsNodB):
+                
+        count=0
+        BICM_int=np.arange(self.N)
+        #BICM_int_new=np.arange(cst.N)
+        while True:
+            count+=1
+            #print("count:",count)
+            BICM_int_new=self.construction(BICM_int,EsNodB)
+            if np.all(BICM_int_new==BICM_int)==True:
+                break
+            else:
+                BICM_int=BICM_int_new
+        
+        BICM_deint=np.argsort(BICM_int)
+        #bit_reversal_sequence=self.cd.bit_reversal_sequence
+        #BICM_int=BICM_int[bit_reversal_sequence]
+
+        return BICM_int,BICM_deint
            
     def main_func(self,EsNodB):
+        
+        if self.adaptive_intlv==True and self.cd.design_SNR!=EsNodB:
+            self.BICM_int,self.BICM_deint=self.adaptive_BICM(EsNodB)
+            #BICM check
+            if len(self.BICM_int)!=self.N:
+                print("BICM_Error")
+                
+            for i in range(self.N):
+                if np.any(i==self.BICM_int)==False:
+                    print("BICM_error")
         
         if self.cd.decoder_ver==2:
             #print("pass")
@@ -142,7 +201,7 @@ class Mysystem_Polar:
             if (np.any(i==frozen_bits) or np.any(i==info_bits))==False:
                 raise ValueError("The frozen set or info set is overlapped")
                 
-        self.cd.design_SNR==EsNodB    
+        self.cd.design_SNR=EsNodB    
         self.cd.frozen_bits=frozen_bits
         self.ec.frozen_bits=frozen_bits
         self.dc.frozen_bits=frozen_bits
@@ -303,6 +362,7 @@ elif FEC==3:
             super().__init__(M,K)  
 
 if __name__=='__main__':
+    
     K=512 #symbol数
     M=16
     
@@ -312,7 +372,7 @@ if __name__=='__main__':
     print("\n")
     print(system.N,system.K)
     
-    MAXCNT=100
+    MAXCNT=10
     count_err=0
     count_all=0
     while count_err<MAXCNT:
@@ -337,6 +397,6 @@ if __name__=='__main__':
             mysys=Mysystem(M,K)  
             mysys.main_func(EsNodB)
             const=monte_carlo_construction.monte_carlo()
-            const.main_const(mysys.N,mysys.K,EsNodB,mysys.M,BICM_int=mysys.BICM_int)   
+            const.main_const(mysys.N,mysys.K,EsNodB,mysys.M,BICM_int=mysys.BICM_int,type=mysys.type)   
     '''
 # %%

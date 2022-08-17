@@ -190,6 +190,9 @@ class RCA():
         
         if BICM==True:
             xi=xi[BICM_deint]
+            
+            #np.savetxt("xi",xi)
+            #from IPython.core.debugger import Pdb; Pdb().set_trace()
         
         #check if xi array is length N
         if len(xi)!=N:

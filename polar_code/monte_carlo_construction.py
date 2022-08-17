@@ -12,6 +12,9 @@ import math
 import matplotlib.pyplot as plt
 import os
 
+sys.path.append(os.path.abspath(".."))
+from modulation.BICM import make_BICM
+
 
 # In[75]:
 
@@ -67,7 +70,7 @@ def polar_encode(N):
 # In[76]:
 
 
-#polar code
+#polar decode
 def chk(llr_1,llr_2):
     CHECK_NODE_TANH_THRES=30
     res=np.zeros(len(llr_1))
@@ -178,14 +181,10 @@ class monte_carlo():
     #get from kwargs
     
     const=Myconstruction(N,M,design_SNR,**kwargs)
-    "comment if BICM or not"
-    #if const.BICM==True:
-        #print("use BICM")
-    #else:
-        #print("don't use BICM")
     
     if N!=const.N:
         print("monte_carlo codelength error!!")
+        
     
     dumped=pickle.dumps(const)
     
@@ -202,7 +201,9 @@ class monte_carlo():
     #initial constant
     const=pickle.loads(dumped)
     
-    epoch=10**4
+    epoch=10**6//multiprocessing.cpu_count()
+    #print(multiprocessing.cpu_count())
+    #print(epoch)
     
     c=np.zeros(const.N)
     for _ in range(epoch):
@@ -224,7 +225,7 @@ class monte_carlo():
     const=pickle.loads(dumped)
     
     c=np.zeros(const.N)
-    multi_num=100 #the number of multiprocessing 
+    multi_num=multiprocessing.cpu_count() #the number of multiprocessing 
     
     inputs=[]
     for _ in range(multi_num):
@@ -257,11 +258,8 @@ class monte_carlo():
     const=pickle.loads(dumped)
     
       
-    filename="{}QAM_{}_{}".format(const.M,const.N,const.design_SNR)
+    filename="{}QAM_{}_{}_type{}".format(const.M,const.N,const.design_SNR,const.type)
     
-    if const.BICM==True:
-        filename+="_BICM_rand"
-        #filename+="_BICM"
     #if file exists, then load txt file
     filename=dir_name+"/"+filename
     
@@ -647,7 +645,19 @@ class Myconstruction:
             self.BICM_deint=np.argsort(self.BICM_int)
             self.BICM=True
         else:
-            self.BICM=False
+            print("no BICM_int input error")
+            
+        if kwargs.get("type") is not None: 
+            self.type=kwargs.get("type")
+            if self.type==1:
+                print("specific program is needed")
+            elif self.type==6:
+                print("specific program is needed")
+            elif self.type==7:
+                print("specific program is needed")
+        else:
+            print("no type input error")
+            
         
         self.M=M
         self.N=N
@@ -676,45 +686,171 @@ class Myconstruction:
 
 #%%
 if __name__=="__main__":
-    '''
-    #initial constant
-    M=4
-    K=8
-    N=int(np.log2(M))*K
-    EsNodB=0
-    const=Myconstruction(N,M,EsNodB)
-    N=const.N
-    epoch=10**1
-    c=np.zeros(const.N)
-    for _ in range(epoch):
-        info,llr=const.main_func()
- 
-        d=np.zeros(len(llr))
-        #print(llr)
-        #np.savetxt("llr",llr)
-        #from IPython.core.debugger import Pdb; Pdb().set_trace()
-        d[(2*info-1)*llr<0]=0
-        d[(2*info-1)*llr>=0]=1
-        #print(c)
-        c=c+d
+    #BICM interleaver
+    def make_BICM_int(N,M,type):
+        
+        BICM_int=np.arange(N,dtype=int)
+        #modify BICM int from simplified to arikan decoder order
+        bit_reversal_sequence=reverse_bits(N)
+        BICM_int=BICM_int[bit_reversal_sequence]
+        
+        if type==1:#1:separated scheme 
+            print("err type1")
+            pass #specific file is needed
+        elif type==2:#2:No intlv in arikan polar decoder
+            pass
+            #BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            #BICM_int[0]=np.sort(BICM_int[0])
+            #BICM_int[1]=np.sort(BICM_int[1])
+            #BICM_int=np.ravel(BICM_int,order='C')
+            #print(BICM_int)
+            
+        elif type==3:#3:Block intlv in arikan polar decoder
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            BICM_int=np.ravel(BICM_int,order='F')
+        elif type==4:#4:rand intlv
+            tmp,_=make_BICM(N)
+            BICM_int=BICM_int[tmp]
+        elif type==5:#2:No intlv +rand intlv for each channel
+            tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            for i in range (int(np.log2(M**(1/2)))):
+                BICM_int[i]=BICM_int[i][tmp]
+            BICM_int=np.ravel(BICM_int,order='C')
+        elif type==6:#凍結ビットを低SNRに設定する
+            BICM_int,_=adaptive_BICM(N,EsNodB,const)
+            pass#specific file is needed
+        elif type==7:#compound polar codes
+            print("err type7")
+            pass #specific file is needed
+            
+        else:
+            print("interleaver type error")
+        BICM_deint=np.argsort(BICM_int)
+        #np.savetxt("deint",BICM_deint,fmt='%.0f')
+        #print(BICM_int)
+        #print(BICM_deint) 
+        return BICM_int,BICM_deint
     
-    print(c)
+    sys.path.append(os.path.join(os.path.dirname('__file__'), '..'))
+    def make_BMI_list(EsNodB,M):
+        # directory make
+        current_directory="/home/kaneko/Dropbox/programming/geometric_shaping/capacity_estimation"
+        #current_directory=os.getcwd()
+        dir_name="BMI"
+        dir_name=current_directory+"/"+dir_name
+        
+        filename="{}QAM_{}".format(M,EsNodB)
+        
+        #if file exists, then load txt file
+        filename=dir_name+"/"+filename
+        
+        #try:
+        res=np.loadtxt(filename)
+        #except FileNotFoundError:
+        return res
+
     
-    const=monte_carlo()
-    print(const.main_const(N,K,EsNodB,M))
-    '''
-    '''
-    N=1024
+    
+    #以下の関数はType6用の関数
+    def construction(N,K,M,BICM_int,EsNodB,const):
+        frozen_bits,info_bits=const.main_const(N,K,EsNodB,M,BICM_int=BICM_int)
+        
+        #print(frozen_bits)
+        BICM_int=np.concatenate([frozen_bits,info_bits])
+        tmp=make_BMI_list(EsNodB,M)
+        argtmp=np.argsort(tmp[:len(tmp)//2])
+        #print(tmp)
+        #print(argtmp)
+        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        BICM_int=BICM_int[argtmp,:]
+        BICM_int=np.ravel(BICM_int,order='F')
+        interleaver_check(N,M,EsNodB,BICM_int,frozen_bits)
+        return BICM_int
+        
+    def interleaver_check(N,M,EsNodB,BICM_int,frozen_bits):
+        BICM_deint=np.argsort(BICM_int)
+        tmp=make_BMI_list(EsNodB,M)
+        for a in range(len(tmp)):
+            tmp[a]=calc_C_inv(tmp[a])
+        #print(tmp)
+        gamma=np.tile(tmp,N//int(np.log2(M)))
+        xi=np.log(gamma)
+        xi=xi[BICM_deint]
+        if np.all(np.sort(np.argsort(xi)[:len(xi)//2])==frozen_bits)==False:
+            print("interleaver error!!")
+
+    def adaptive_BICM(N,EsNodB,const):
+                
+        count=0
+        BICM_int=np.arange(N)
+        #BICM_int_new=np.arange(cst.N)
+        while True:
+            count+=1
+            print("count:",count)
+            BICM_int_new=construction(N,K,M,BICM_int,EsNodB,const)
+            if np.all(BICM_int_new==BICM_int)==True:
+                break
+            else:
+                BICM_int=BICM_int_new
+        
+        BICM_deint=np.argsort(BICM_int)
+        #bit_reversal_sequence=self.cd.bit_reversal_sequence
+        #BICM_int=BICM_int[bit_reversal_sequence]
+
+        return BICM_int,BICM_deint
+    
+    def calc_C_inv(I):
+        '''
+        input:
+        I:mutual information
+        output:
+        gamma:channel SNR Es/No
+        ----
+        referrence:
+        POLAR CODES FOR ERROR CORRECTION:
+        ANALYSIS AND DECODING ALGORITHMS
+        p37
+        (4.5)
+        '''
+        if I>1 or I<0:
+            print("I is err")
+        
+        a1=1.09542
+        b1=0.214217
+        c1=2.33727
+        a2=0.706692
+        b2=0.386013
+        c2=-1.75017
+        I_thresh=0.3646
+            
+        if I<I_thresh:
+            sigma=a1*I**2+b1*I+c1*I**(1/2)
+        else:
+            sigma=-a2*np.log(b2*(1-I))-c2*I
+            
+        gamma=sigma**2/8
+        #gamma_dB=10*math.log10(gamma)
+        return gamma
+
+    
+    
+
     K=512
+    N=2*K
+    type=5
+    
     M_list=[16,256]
     EsNodB_list=np.arange(4,10,0.5)
     for M in M_list:
+        #インターリーバ設計
+        BICM_int,_=make_BICM_int(N,M,type)
+        
         for EsNodB in EsNodB_list:  
             if M==16:
                 EsNodB+=0
             elif M==256:
-                EsNodB+=10
-            
-            const.main_const(N,K,EsNodB,M)    
-    '''
+                EsNodB+=10 
+            const=monte_carlo()
+            const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
     
