@@ -2,13 +2,13 @@ import ray
 import pickle
 import sys
 import numpy as np
-from main import Mysystem
+from main_sep import Mysystem
 import itertools
 import multiprocessing
 
 #a=multiprocessing.cpu_count()
-#ray.init(num_cpus=a//10)
-ray.init()
+#ray.init(num_cpus=a//5)
+#ray.init()
 
 @ray.remote
 def output(dumped,EbNodB):

@@ -1,7 +1,7 @@
 #%%
 import math
 import numpy as np
-import cupy as cp
+#import cupy as cp
 import matplotlib.pyplot as plt
 
 #%%
@@ -112,6 +112,9 @@ class Modem:
     @staticmethod
     def calc_exp(x,No):
         #クリップする
+        if np.any(x==0):#0が含まれていると、LLRの計算がうまく行かない
+            print("inputs contain some 0. This will raise an error")
+        
         res=np.exp(-1*np.array(x)/No)
         res=np.sum(res,axis=0,keepdims=True)
         res=np.clip(res,10**(-15),10**15)
@@ -152,12 +155,16 @@ class Modem:
         #choose if LLR make exact or max approximation
         exact=True
 
+        #print(len(self.zeros))
+        #from IPython.core.debugger import Pdb; Pdb().set_trace()
+
         zeros = self.zeros
         ones = self.ones
         
         #for BICM_ID,euclid distance 3D-array
         num_mat=np.zeros((len(ones[0]),len(x),len(ones))) #num==(b=0) denum==(b=1)
-        denum_mat=np.zeros((len(ones[0]),len(x),len(ones))) #縦軸(x軸)は1シンボルあたりの信号点のbit数、横軸はシンボル数
+        denum_mat=np.zeros((len(ones[0]),len(x),len(ones))) #縦軸(x軸)は1シンボルあたりの信号点のbit数、横軸はシンボル数,z軸はシンボル内のビット数
+        #x軸は、とあるビットに対して対応する信号店のユークリッド距離、z軸は、各ビットに対してのx軸
         
         LLR = []
         for i,(zero_i, one_i) in enumerate(zip(zeros, ones)): #iビット目のビットが0のときの信号点と1のときの信号点のリスト
@@ -172,9 +179,11 @@ class Modem:
             #for BICM_ID
             #print("a",len(num))
             #print(num_mat[i,:].shape)
+            #print(zero_i)
+            #from IPython.core.debugger import Pdb; Pdb().set_trace()
+            
             num_mat[:,:,i]=num
             denum_mat[:,:,i]=denum
-            #print(len(zero_i))
 
             if exact==False:
                 num_post = np.amin(num, axis=0, keepdims=True)
@@ -186,6 +195,7 @@ class Modem:
                 denum_post = self.calc_exp(denum,No)
                 #print(num_post[0])
                 #print(denum_post[0])
+                #print(zero_i)
                 #from IPython.core.debugger import Pdb; Pdb().set_trace()
                 
                 llr = np.transpose(num_post[0]) - np.transpose(denum_post[0]) #二次元配列になってしまっているので、1次元に直す

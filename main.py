@@ -35,7 +35,7 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         const_var=3 #1:MC 2:iGA 3:RCA
-        self.type=2#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=1#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         self.adaptive_intlv=False #default:false
         
         #for construction
@@ -87,8 +87,6 @@ class Mysystem_Polar:
         
         BICM_int=np.arange(N,dtype=int)
         #modify BICM int from simplified to arikan decoder order
-        #bit_reversal_sequence=self.cd.bit_reversal_sequence
-        #BICM_int=BICM_int[bit_reversal_sequence]
         
         if type==1:#1:separated scheme 
             print("err type1")
@@ -105,9 +103,17 @@ class Mysystem_Polar:
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             BICM_int=np.ravel(BICM_int,order='F')
         elif type==4:#4:rand intlv
+            #bit reversal order
+            bit_reversal_sequence=self.cd.bit_reversal_sequence
+            BICM_int=BICM_int[bit_reversal_sequence]
+            
             tmp,_=make_BICM(N)
             BICM_int=BICM_int[tmp]
         elif type==5:#2:No intlv +rand intlv for each channel
+            #bit reversal order
+            bit_reversal_sequence=self.cd.bit_reversal_sequence
+            BICM_int=BICM_int[bit_reversal_sequence]
+            
             tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             for i in range (int(np.log2(M**(1/2)))):
@@ -117,6 +123,9 @@ class Mysystem_Polar:
             self.adaptive_intlv=True
             pass#specific file is needed
         elif type==7:#compound polar codes
+            #use block interleaver
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            BICM_int=np.ravel(BICM_int,order='F')
             print("err type7")
             pass #specific file is needed
             
@@ -191,10 +200,10 @@ class Mysystem_Polar:
         if self.cd.decoder_ver==2:
             #print("pass")
             CRC_len=len(self.cd.CRC_polynomial)-1  
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int)
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int,type=self.type)
         else:
             #print('pass2')
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int)
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int,type=self.type)
             
         #check
         for i in range(self.N):
@@ -364,7 +373,7 @@ elif FEC==3:
 if __name__=='__main__':
     
     K=512 #symbol数
-    M=16
+    M=256
     
     EsNodB=8.0
     print("EsNodB",EsNodB)
