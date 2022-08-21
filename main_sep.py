@@ -168,8 +168,19 @@ class Mysystem:
             #復号した推定符号ごと対応するマッピングパターンを出力する
             self.make_corr_cwd()
             
+            #BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            #BICM_int=np.ravel(BICM_int,order='F')
+            
+            
+            #bit reversal order
+            bit_reversal_sequence=self.cd.bit_reversal_sequence
+            BICM_int=BICM_int[bit_reversal_sequence]
+            
+            tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-            BICM_int=np.ravel(BICM_int,order='F')
+            for i in range (int(np.log2(M**(1/2)))):
+                BICM_int[i]=BICM_int[i][tmp]
+            BICM_int=np.ravel(BICM_int,order='C')
             
         else:
             print("interleaver type error")
@@ -181,29 +192,39 @@ class Mysystem:
     
     def make_corr_cwd(self):
         
-        base_num=2
+        #チャネルレベルの数(=enc_numの数)
+        base_num=self.enc_num
         
         #base_numがlのとき、l×lの生成行列を用意する
-        G_0=np.array([[1,0],[1,1]])
-        
-        if len(G_0)!=base_num:
+        if base_num==2:
+            self.G_0=np.array([[1,0],[1,1]])
+        elif base_num==4:
+            self.G_0=np.array([[1,0,0,0],[1,1,0,0],[1,0,1,0],[1,1,1,1]])
+        else:
+            raise ValueError("not supported modulation number!")
+            
+        #check
+        if len(self.G_0)!=base_num:
             print("G_0 is wrong!")
         
         #corr_cwd_keys[0]は、1ビット目が0だったときの可能性のある符号語のリスト
         #corr_cwd_keys[1]は、1ビット目が1だったときの可能性のある符号語のリスト
         
-        self.corr_cwd_keys=[[],[]]
+        self.corr_cwd_keys=[[] for _ in range(base_num)]
         
         #base_num列のすべてのパターンの情報ビットを生成する
-        decs=[dec for dec in range(2**2)]
+        decs=[dec for dec in range(2**base_num)]
         bin_out = [np.binary_repr(d, width=base_num) for d in decs] #文字列の情報ビットのリスト
         bin_out= [np.array(list(bin_out_str),dtype=int) for bin_out_str in bin_out] #int型の情報ビットの行列
+        
+        #print(len(bin_out))
+        #from IPython.core.debugger import Pdb; Pdb().set_trace()
         
         for info in bin_out:
             #print(info)
             #mapperと同じコードで符号化する
             info=np.reshape(info,[int(np.log2(self.M**(1/2))),-1],order='C')
-            map=(info.T@G_0)%2
+            map=(info.T@self.G_0)%2
             map=np.ravel(map,order='F')
             #print(cwd)
             if info[0]==0:
@@ -257,15 +278,15 @@ class Mysystem:
         elif np.all(np.isnan(tmp[3]))==False:#すべてがnan出なかった場合、誤り
             print("tmp[3] err")
         else:
-            print("cwd is ok")
+            pass
         
         #情報ビットを取り出す
         tmp=tmp[0::2]
 
-        #tmp=np.ravel(self.txcwd,order='F')
-        if np.sum(self.txcwd[0::2]!=tmp)!=0:
-            print("EST cwd is not equal to cwd!")
-            from IPython.core.debugger import Pdb; Pdb().set_trace()
+        #check
+        #if np.sum(self.txcwd[0::2]!=tmp)!=0:
+            #print("EST cwd is not equal to cwd!")
+            #from IPython.core.debugger import Pdb; Pdb().set_trace()
 
         #tmpをEST_cwdに代入する
         EST_cwd_2D=tmp
@@ -286,39 +307,19 @@ class Mysystem:
             count_one=0
             count_zero_key=0
             count_one_key=0
-            #print("map",self.txmap[:,symb_idx])
-            #print("cwd",self.txcwd[:,symb_idx])
             
-            
-            #check
-            txcwd=self.txcwd[:,symb_idx]
-            txmap=self.txmap[:,symb_idx]
-            
-            if txcwd[0]!=EST_cwd_2D[0,symb_idx] or txcwd[2]!=EST_cwd_2D[1,symb_idx]:
-                print("cwd error")
-            else:
-                #print("cwd is ok")
-                pass
-            
-            txcwd=np.reshape(txcwd,[int(np.log2(self.M**(1/2))),-1],order='F')
-            
-            #print(txcwd)
-            EST_map=(txcwd.T@np.array([[1,0],[1,1]]))%2
-            #print(EST_map)
-            EST_map=np.ravel(EST_map,order='C')
-            
-            #check
-            if np.any(txmap!=EST_map):
-                print("error map")
-                print(txmap)
-                print(EST_map)
-                from IPython.core.debugger import Pdb; Pdb().set_trace()
-            else:
+            #check符号化したcwdとmapのビットのインデックスが、正しく同じシンボルに入っているか確認する
+            #txcwd=self.txcwd[:,symb_idx]
+            #txmap=self.txmap[:,symb_idx]
+            #txcwd=np.reshape(txcwd,[int(np.log2(self.M**(1/2))),-1],order='F')
+            #EST_map=(txcwd.T@np.array([[1,0],[1,1]]))%2
+            #EST_map=np.ravel(EST_map,order='C')
+            #if np.any(txmap!=EST_map):
+                #print("error map")
+                #from IPython.core.debugger import Pdb; Pdb().set_trace()
+            #else:
                 #print("map is ok")
-                pass
-            
-            #print(EST_cwd[2*symb_idx])
-            #print(EST_cwd[2*symb_idx+1])
+                #pass
             
             for bin_symb in bin_seq:
                 
@@ -332,130 +333,43 @@ class Mysystem:
                 if former_bin in self.corr_cwd_keys[int(EST_cwd_2D[0,symb_idx])] and latter_bin in self.corr_cwd_keys[int(EST_cwd_2D[1,symb_idx])]:
                     writing=1
                     #print(bin_symb)
-                    
                 else:
                     pass
 
-
                 if bin_symb[key_num] == '0':
                     #EST_cwdと同じビットになっているもののみカウント
-                    #writingが立っている場合、その行列のインデックスに1を立てる
+                    #writingが立っている場合、その行列の要素をコピーする
                     if writing==1:
-                        #print("pass")
                         new_num[count_zero_key,symb_idx]=self.num[count_zero,symb_idx,key_num]
                         count_zero_key+=1
                     else:
                         pass
-                    #インデックスをインクリメントする
-                    count_zero+=1
+                    count_zero+=1#インデックスをインクリメントする
                         
                 elif bin_symb[key_num] == '1':
                     #EST_cwdと同じビットになっているもののみカウント
                     if writing==1:
-                        #print("pass")
-                        
+                        #writingが立っている場合、その行列の要素をコピーする
                         new_denum[count_one_key,symb_idx]=self.denum[count_one,symb_idx,key_num]
                         count_one_key+=1
-                        
-                        #ones[count_one,symb_idx]=1
                     else:
                         pass
-                    
-                    #インデックスをインクリメントする
-                    count_one+=1
-                        
+                    count_one+=1#インデックスをインクリメントする   
                 else:
                     print("program error")
-                    
-            #check
-            #print("correct map",txmap)
-            #print(self.num[:,symb_idx,key_num].shape)
-            #print(self.num[:,symb_idx,key_num])
-            #print(self.denum[:,symb_idx,key_num])
-            
-            #tmp_num=self.num[:,symb_idx,key_num][zeros[:,symb_idx]]
-            #tmp_denum=self.denum[:,symb_idx,key_num][ones[:,symb_idx]]
-            
-            #print("selected",self.num[:,symb_idx,key_num]*zeros[:,symb_idx])
-            #print(self.denum[:,symb_idx,key_num]*ones[:,symb_idx])
-            
-            #res_num=np.exp(-1*np.array(tmp_num)/self.No)
-            #res_denum=np.exp(-1*np.array(tmp_denum)/self.No)
-            
-            #print("exp")
-            #print(res_num)
-            #print(res_denum)
-            
-            #res_num=np.sum(res_num)
-            #res_denum=np.sum(res_denum)
-            #res_num=np.clip(res_num,10**(-15),10**15)
-            #res_num=np.log(res_num)
-            #res_denum=np.clip(res_denum,10**(-15),10**15)
-            #res_denum=np.log(res_denum)
-            #print(res_num)
-            #print(res_denum)
-            
-            #from IPython.core.debugger import Pdb; Pdb().set_trace()
-            
-            #check
+            #check行列の要素すべてに対して書き込むかどうか計算しているかどうか確認する
             if count_zero!=8 or count_one!=8:
                 print("count_error")
-        
-            #from IPython.core.debugger import Pdb; Pdb().set_trace()
-        #print(zeros.shape)
-        
-        
-        #if np.any(np.sum(zeros,axis=0)!=2) or np.any(np.sum(ones,axis=0)!=2):
-            #print("1 is not 2 error!!")
-            #print(np.sum(zeros,axis=0))
-            #print(np.sum(ones,axis=0))
-            
+        #checkコピーされた要素がすべてを満たしているかどうか確認する
         if np.any(new_num==0) or np.any(new_denum==0):
             print("not filled keys!")
-            print(self.one_key)
-            print(self.zero_key)
-        
-        #print(zeros)
         #from IPython.core.debugger import Pdb; Pdb().set_trace()
         
         #llrの計算をする
         num_post=self.modem.calc_exp(new_num,No)
         denum_post=self.modem.calc_exp(new_denum,No)
-        
         llr = np.transpose(num_post[0]) - np.transpose(denum_post[0])
-        
         return llr
-    
-    '''
-    def determine_keys(self,EST_info,pre_dec_num,key_num):
-        
-        #error check
-        
-        #tmp=np.sum(EST_info!=self.info_use)
-        #print("former est_info error",tmp)
-        
-        #再エンコードする
-        u_massage=self.ec[pre_dec_num].generate_U(EST_info)
-        EST_cwd=self.ec[pre_dec_num].encode(u_massage[self.ec[pre_dec_num].bit_reversal_sequence])
-        #print(np.sum(self.cwd_use!=EST_cwd))
-        
-        
-       #u_massage=self.ec[pre_dec_num].generate_U(EST_info)
-       #EST_cwd=self.ec[pre_dec_num].encode(u_massage[self.ec[pre_dec_num].bit_reversal_sequence])
-        
-        if np.any(EST_cwd!=self.cwd_1D[:len(self.cwd_1D)//2]):
-            print("EST_cwd 1 error!")
-            #print(EST_cwd)
-            #print(self.cwd_1)
-            print("error count",np.sum(EST_cwd!=self.cwd_use))
-            from IPython.core.debugger import Pdb; Pdb().set_trace()
-            
-        #推定符号語から、Keyの行列を生成する
-        self.make_key(EST_cwd,key_num)
-        #zero_key,one_key=self.make_key(EST_cwd,key_num)
-        
-        #return zero_key,one_key
-    '''
            
     def main_func(self,EsNodB):
         #すべてのデコーダ一律で凍結ビットを得る
@@ -524,125 +438,73 @@ class Mysystem:
             
             #print(res)
             
-            #print(len(info_bits_sep)/self.N_sep)
-            
-        #for iGA and RCA and monte_carlo construction
-                
+        #関数のメイン部分
         EsNo = 10 ** (EsNodB / 10)
         No=1/EsNo
-        
-        #check
-        self.No=No
 
         info=np.empty(0,dtype=int)
         cwd=np.empty(0,dtype=int)
         
-        #info_use=np.empty(0,dtype=int)
         for i in range(self.enc_num):
             info_sep,cwd_sep=self.ec[i].polar_encode()
             #print(len(info_sep))
             
-            #err check
-            if i==0:
-                #self.info_use=info_sep
-                self.cwd_use=cwd_sep
-                #cwd check
-                #u_massage=self.ec[i].generate_U(info_sep)
-                #tmp_cwd=self.ec[i].encode(u_massage[self.ec[i].bit_reversal_sequence])
-                #if np.any(tmp_cwd!=cwd_sep):
-                    #print("error gen cwd !")
-                    #print(np.sum(tmp_cwd!=cwd_sep))
-                    
-                #else:
-                    #print("cwd is ok")
-
-            
             info=np.concatenate([info,info_sep])
             cwd=np.concatenate([cwd,cwd_sep])
 
-        #check
-        self.cwd_1D=cwd
         
-        if self.type==7:
+        #生成した符号語cwdから、シンボルにマッピングするための行列mapを生成する
+        if self.type==7:#各シンボルに対して追加の分極を行う
             cwd=np.reshape(cwd,[int(np.log2(self.M**(1/2))),-1],order='C')
-            map=(cwd.T@np.array([[1,0],[1,1]]))%2
+            map=(cwd.T@self.G_0)%2
             map=np.ravel(map,order='F')
             
-        else:
+        elif self.type==1:#符号語をそのままマッピングする
             map=cwd
         
-        '''
-        a=np.arange(len(self.BICM_int))
-        b=np.arange(len(self.BICM_int))[self.BICM_int]
-        np.savetxt("int",self.BICM_int,fmt="%.0f")
-        np.savetxt("deint",self.BICM_deint,fmt="%.0f")
-        print(a)
-        print(b)
-        '''
-        
-        #cwd check
-        #self.cwd_1=cwd[:len(cwd)//2]
+        else:
+            print("type ver is wrong!!")
         
         map=map[self.BICM_int] #interleave
         
-        self.txmap=np.reshape(map,[int(np.log2(self.M)),-1],order='F')
-        self.txcwd=np.reshape(cwd.ravel(order='C')[self.BICM_int],[int(np.log2(self.M)),-1],order='F')
+        #チェック用
+        #self.txmap=np.reshape(map,[int(np.log2(self.M)),-1],order='F')
+        #self.txcwd=np.reshape(cwd.ravel(order='C')[self.BICM_int],[int(np.log2(self.M)),-1],order='F')
         
         TX_conste=self.modem.modulate(map)
         #print(TX_conste)
         RX_conste=self.ch.add_AWGN(TX_conste,No)
         if self.type==7:
-            tmp=True
+            tmp=True#demodulate関数から、ユークリッド距離の行列を出力させる
             Lc,mat_list=self.modem.demodulate(RX_conste,No,tmp)
             
             #euclid distanceの三次元行列をクラス変数にする
             self.num=mat_list[0]
             self.denum=mat_list[1]
-            
-        else:
+        else:#llrのみ出力させる
             Lc=self.modem.demodulate(RX_conste,No)
-        tmp_Lc=Lc
             
         Lc=Lc[self.BICM_deint] #de interleave
         
-        if np.all([tmp_Lc]==Lc[self.BICM_int]):
-            pass
-        else:
-            print("Lc error")
-        
-        EST_info=np.empty(0)
+        EST_info=np.empty(0) #推定情報ビット列
         for i in range(self.enc_num):
             if self.type==7:
                 #compound polar codes
                 if i==0:
                     llr=self.dc[0].chk(Lc[i*self.N_sep:(i+1)*self.N_sep],Lc[(i+1)*self.N_sep:(i+2)*self.N_sep])
                 elif i==1:
-                    #今まで復号したEST_infoから、次のEST_cwdを復号する  
-                    
+                    #今まで復号したEST_infoから、もう一度復調する 
                     EST_cwd=np.zeros(self.N)
                     EST_cwd[:]=np.nan
+
+                    #再エンコードする
                     K_sep_st=0
                     for pre_dec_num in range(i):#今まで復号した復号器の個数分の符号語を生成する
-                        #再エンコードする
-                        
                         K_sep_ed=len(self.ec[pre_dec_num].info_bits)
                         u_massage=self.ec[pre_dec_num].generate_U(EST_info[K_sep_st:K_sep_ed])
                         EST_cwd_sep=self.ec[pre_dec_num].encode(u_massage[self.ec[pre_dec_num].bit_reversal_sequence])
                         K_sep_st=K_sep_ed
                         EST_cwd[pre_dec_num*self.N_sep:(pre_dec_num+1)*self.N_sep]=EST_cwd_sep
-                        
-                    #インターリーブする
-                    #EST_cwd=EST_cwd[self.BICM_int]
-                    
-                    #print(EST_cwd)
-                        
-                    ##check
-                    if np.any(EST_cwd[:len(self.cwd_1D)//2]!=self.cwd_1D[:len(self.cwd_1D)//2]):
-                        print("EST_cwd 1 error!")
-                        #print(EST_cwd)
-                        #print(self.cwd_1)
-                        print("error count",np.sum(EST_cwd!=self.cwd_use))
-                        from IPython.core.debugger import Pdb; Pdb().set_trace()
                     
                     #受信信号店からLLRを再計算する
                     llr=np.zeros(self.N)
@@ -652,16 +514,7 @@ class Mysystem:
                         llr_sep=self.make_key(EST_cwd,key_num,No) #zeros_key,ones_keyはx軸が1シンボル内で取りうるビット列のインデックス、y軸がシンボル長の二次元配
                         llr[key_num::int(np.log2(self.M))]=llr_sep
                     
-                    
-                    #print(len(llr))
-                    #for j in [0,2]:
-                        #zero_key[:,:,j]=np.ones(zero_key[:,:,j].shape)
-                        #one_key[:,:,j]=np.ones(zero_key[:,:,j].shape)
-                    #num=np.stack([mat_list[0][:,:,[0,1]],mat_list[0][:,:,[2,3]]],axis=1)
-                    #denum=np.concatenate([mat_list[1][:,:,[0,1]],mat_list[1][:,:,[2,3]]],axis=1)
-                    #print(num.shape)
-                    
-                    ##check
+                    ##checkユークリッド距離の行列からLLRが正しく復調できるかどうか確認する
                     '''
                     num_post = self.modem.calc_exp(num,No)
                     denum_post = self.modem.calc_exp(denum,No)
@@ -681,29 +534,17 @@ class Mysystem:
                         print("llr is correct")
                     '''
                     
-                    ##check end
-                    #num_post=self.modem.calc_exp(self.zero_key,No)
-                    #denum_post=self.modem.calc_exp(self.one_key,No)
-                    #print(num_post)
-                    #二次元配列のLLRを作成
-                    #llr = np.transpose(num_post[0]) - np.transpose(denum_post[0])
-                    #1次元のベクトルに変換
-                    #llr=np.ravel(llr,order='F')
-                    
-                    #使うビットだけ取り出す
-                    #print(llr)
-                    
+                    #再度復調したLLRをでインターリーブする
                     llr=llr[self.BICM_deint]
                     
-                    if np.all(np.isnan(llr[:len(llr)//2]))!=True:
+                    #check
+                    if np.all(np.isnan(llr[:len(llr)//2]))!=True or np.any(np.isnan(llr[len(llr)//2:])):
                         print("llr error")
-                        
+                        #from IPython.core.debugger import Pdb; Pdb().set_trace()
+                    
+                    #使うビットだけ取り出す
                     llr=llr[len(llr)//2:]
                     
-                    #check
-                    if np.any(np.isnan(llr)):
-                        print("llr is nan error!")
-                        from IPython.core.debugger import Pdb; Pdb().set_trace()
                     #print(llr)             
             else:
                 #separated polar codes
@@ -711,12 +552,7 @@ class Mysystem:
                 pass  
             
             EST_info_sep=self.dc[i].polar_decode(llr)
-            
             EST_info=np.concatenate([EST_info,EST_info_sep])
-            
-            #if i==0:
-                #EST_info=self.dc[i].polar_decode(Lc[i*self.N_sep:(i+1)*self.N_sep])
-        
         
         #print("err",np.sum(info_use!=EST_info_use))
         #print(len(info_use))
@@ -729,7 +565,7 @@ if __name__=='__main__':
     K=512 #symbol数
     M=16
     
-    EsNodB=8.0
+    EsNodB=20.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

@@ -34,8 +34,8 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        const_var=3 #1:MC 2:iGA 3:RCA
-        self.type=1#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        const_var=3 #1:MC 2:iGA 3:RCA 4:GA
+        self.type=3#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         self.adaptive_intlv=False #default:false
         
         #for construction
@@ -102,6 +102,7 @@ class Mysystem_Polar:
         elif type==3:#3:Block intlv in arikan polar decoder
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             BICM_int=np.ravel(BICM_int,order='F')
+            #print(BICM_int)
         elif type==4:#4:rand intlv
             #bit reversal order
             bit_reversal_sequence=self.cd.bit_reversal_sequence
@@ -119,6 +120,8 @@ class Mysystem_Polar:
             for i in range (int(np.log2(M**(1/2)))):
                 BICM_int[i]=BICM_int[i][tmp]
             BICM_int=np.ravel(BICM_int,order='C')
+            print(BICM_int)
+            
         elif type==6:#凍結ビットを低SNRに設定する
             self.adaptive_intlv=True
             pass#specific file is needed
