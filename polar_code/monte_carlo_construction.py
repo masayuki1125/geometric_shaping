@@ -538,10 +538,10 @@ if __name__=="__main__":
 
     K=512
     N=2*K
-    type=1
+    type=3
     
     M_list=[16,256]
-    EsNodB_list=np.arange(9,10,0.5)
+    EsNodB_list=np.arange(4,10,0.5)
     for M in M_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)

@@ -105,7 +105,6 @@ def make_BICM_int(N,M,type,EsNodB=False,const=False):
             pass #specific file is needed
         elif type==2:#2:No intlv in arikan polar decoder
             pass
-            
         elif type==3:#3:Block intlv in arikan polar decoder
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             BICM_int=np.ravel(BICM_int,order='F')
@@ -124,7 +123,6 @@ def make_BICM_int(N,M,type,EsNodB=False,const=False):
         elif type==7:#compound polar codes
             print("err type7")
             pass #specific file is needed
-            
         else:
             print("interleaver type error")
         BICM_deint=np.argsort(BICM_int)
@@ -137,6 +135,8 @@ def make_BICM_int(N,M,type,EsNodB=False,const=False):
 # In[4]:
 
 def calc_BLER_monte_carlo(N,K,M,type,design_SNR):
+    #Monte Carlo構成の推定BLERについて考える
+    
     #make directry name
     home=os.environ['HOME']
     current_directory=home+"/Dropbox/programming/geometric_shaping/polar_code"
@@ -145,8 +145,11 @@ def calc_BLER_monte_carlo(N,K,M,type,design_SNR):
     dir_name=current_directory+"/"+dir_name
     
     #make filename
-    filename="{}QAM_{}_{}".format(M,N,design_SNR)
+    filename="{}QAM_{}_{}_type{}".format(M,N,design_SNR,int(type))
     
+    #print(filename)
+    
+    '''
     if type==1:
         filename+="sep"
     elif type==2:
@@ -157,8 +160,8 @@ def calc_BLER_monte_carlo(N,K,M,type,design_SNR):
         filename+="_BICM_rand"
     else:
         print("something wrong")
-    
     #if file exists, then load txt file
+    '''
     filename=dir_name+"/"+filename
     
     try:
@@ -387,12 +390,12 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
             #interleaver selection
             #print(SNR)
             
-            print("pass")
-            print(N)
-            print(M)
-            print(type)
+            #print("pass")
+            #print(N)
+            #print(M)
+            #print(type)
             BICM_int,BICM_deint=make_BICM_int(N,M,type,SNR,const)
-            print("pass2")
+            #print("pass2")
             
             #gamma == EsNo(True value)
             if type==1:
@@ -469,8 +472,8 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 N=1024
 K=N//2
 M_list=[256]#,2**2**6]
-type_list=[2]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
-const_ver_list=[1,2]#1:RCA 2:IGA 3:MC
+type_list=[1,2,3,4,5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+const_ver_list=[1,2,3]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
     for M in M_list:

@@ -34,7 +34,7 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        const_var=3 #1:MC 2:iGA 3:RCA 4:GA
+        const_var=1#1:MC 2:iGA 3:RCA 4:GA
         self.type=3#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         self.adaptive_intlv=False #default:false
         

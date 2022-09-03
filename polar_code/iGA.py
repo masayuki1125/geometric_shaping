@@ -7,11 +7,6 @@ import os
 sys.path.append(os.path.join(os.path.dirname('__file__'), '..'))
 from capacity_estimation.calc_capacity import make_BMI_list 
 # In[3]:
-
-class Gaussian_Approximation:
-    
-    
-
 class Improved_GA():
 
   def __init__(self):
