@@ -76,7 +76,6 @@ class Mysystem_Polar:
         elif self.cd.decoder_ver==2:
             filename+="_CA_SCL"
                     
-        #provisional
         filename+="_type{}".format(self.type)
         
         #output filename to confirm which program I run

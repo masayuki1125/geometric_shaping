@@ -78,7 +78,7 @@ class Mysystem_Polar:
             filename+="_CA_SCL"
                     
         #provisional
-        filename+="_type{}".format(self.type)
+        filename+="_type{}_Bit_interleave".format(self.type)
         
         #output filename to confirm which program I run
         print(filename)

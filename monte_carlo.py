@@ -175,7 +175,7 @@ class savetxt():
 if __name__=="__main__":
 
 #def monte_carlo(M,K):
-    K=256
+    K=512
     print("K=",K)
     mc=MC(K)
     M_list=[256]
