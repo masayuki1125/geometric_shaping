@@ -30,6 +30,7 @@ FEC=1#1:polar code 2:turbo code 3:LDPC code
 
 class Mysystem_Polar:
     def __init__(self,M,K):
+        
         #make instance
         self.M=M
         self.K=K
@@ -61,6 +62,49 @@ class Mysystem_Polar:
         
         #interleaver design
         self.BICM_int,self.BICM_deint=self.make_BICM_int(self.N,self.M,self.type)
+        
+        '''
+        凍結ビットを選択する
+        '''
+        
+        
+        
+        #if self.adaptive_intlv==True and self.cd.design_SNR!=EsNodB:
+        #    self.BICM_int,self.BICM_deint=self.adaptive_BICM(EsNodB)
+        #    #BICM check
+        #    if len(self.BICM_int)!=self.N:
+        #        print("BICM_Error")
+        #        
+        #    for i in range(self.N):
+        #        if np.any(i==self.BICM_int)==False:
+        #            print("BICM_error")
+        
+        designSNR=15.0
+        
+        if self.cd.decoder_ver==2:
+            
+            #print("pass")
+            CRC_len=len(self.cd.CRC_polynomial)-1  
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,designSNR,self.M,BICM_int=self.BICM_int,type=self.type)
+        else:
+
+            #print('pass2')
+            frozen_bits,info_bits=self.const.main_const(self.N,self.K,designSNR,self.M,BICM_int=self.BICM_int,type=self.type)
+            
+        #check
+        for i in range(self.N):
+            if (np.any(i==frozen_bits) or np.any(i==info_bits))==False:
+                raise ValueError("The frozen set or info set is overlapped")
+                
+        self.cd.design_SNR=designSNR    
+        self.cd.frozen_bits=frozen_bits
+        self.ec.frozen_bits=frozen_bits
+        self.dc.frozen_bits=frozen_bits
+        self.cd.info_bits=info_bits
+        self.ec.info_bits=info_bits
+        self.dc.info_bits=info_bits
+        #for iGA and RCA and monte_carlo construction
+        
         
         self.filename=self.make_filename()
         
@@ -139,6 +183,7 @@ class Mysystem_Polar:
     
     #以下の関数はType6用の関数
     def construction(self,BICM_int,EsNodB):
+        
         frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=BICM_int)
         
         #print(frozen_bits)
@@ -166,7 +211,8 @@ class Mysystem_Polar:
             print("interleaver error!!")
     
     def adaptive_BICM(self,EsNodB):
-                
+        
+        
         count=0
         BICM_int=np.arange(self.N)
         #BICM_int_new=np.arange(cst.N)
@@ -187,37 +233,39 @@ class Mysystem_Polar:
            
     def main_func(self,EsNodB):
         
-        if self.adaptive_intlv==True and self.cd.design_SNR!=EsNodB:
-            self.BICM_int,self.BICM_deint=self.adaptive_BICM(EsNodB)
-            #BICM check
-            if len(self.BICM_int)!=self.N:
-                print("BICM_Error")
+        #if self.adaptive_intlv==True and self.cd.design_SNR!=EsNodB:
+        #    self.BICM_int,self.BICM_deint=self.adaptive_BICM(EsNodB)
+        #    #BICM check
+        #    if len(self.BICM_int)!=self.N:
+        #        print("BICM_Error")
+        #        
+        #    for i in range(self.N):
+        #        if np.any(i==self.BICM_int)==False:
+        #            print("BICM_error")
+        if self.cd.design_SNR!=EsNodB:
+            if self.cd.decoder_ver==2:
                 
+                #print("pass")
+                CRC_len=len(self.cd.CRC_polynomial)-1  
+                frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int,type=self.type)
+            else:
+
+                #print('pass2')
+                frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int,type=self.type)
+                
+            #check
             for i in range(self.N):
-                if np.any(i==self.BICM_int)==False:
-                    print("BICM_error")
-        
-        if self.cd.decoder_ver==2:
-            #print("pass")
-            CRC_len=len(self.cd.CRC_polynomial)-1  
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,EsNodB,self.M,BICM_int=self.BICM_int,type=self.type)
-        else:
-            #print('pass2')
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K,EsNodB,self.M,BICM_int=self.BICM_int,type=self.type)
-            
-        #check
-        for i in range(self.N):
-            if (np.any(i==frozen_bits) or np.any(i==info_bits))==False:
-                raise ValueError("The frozen set or info set is overlapped")
-                
-        self.cd.design_SNR=EsNodB    
-        self.cd.frozen_bits=frozen_bits
-        self.ec.frozen_bits=frozen_bits
-        self.dc.frozen_bits=frozen_bits
-        self.cd.info_bits=info_bits
-        self.ec.info_bits=info_bits
-        self.dc.info_bits=info_bits
-        #for iGA and RCA and monte_carlo construction
+                if (np.any(i==frozen_bits) or np.any(i==info_bits))==False:
+                    raise ValueError("The frozen set or info set is overlapped")
+                    
+            self.cd.design_SNR=EsNodB    
+            self.cd.frozen_bits=frozen_bits
+            self.ec.frozen_bits=frozen_bits
+            self.dc.frozen_bits=frozen_bits
+            self.cd.info_bits=info_bits
+            self.ec.info_bits=info_bits
+            self.dc.info_bits=info_bits
+            #for iGA and RCA and monte_carlo construction
                 
         EsNo = 10 ** (EsNodB / 10)
         No=1/EsNo
@@ -373,9 +421,9 @@ elif FEC==3:
 if __name__=='__main__':
     
     K=512 #symbol数
-    M=16
+    M=256
     
-    EsNodB=8.0
+    EsNodB=17.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

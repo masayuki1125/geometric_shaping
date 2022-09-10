@@ -447,7 +447,7 @@ class RCA():
                
     @staticmethod
     def calc_J_inv(I):
-        var=1
+        var=2
         if var==1:
             '''
             input:
@@ -482,6 +482,7 @@ class RCA():
             return gamma
         
         elif var==2:
+            #print("pass")
             def A(c):
                 return (-5+24*np.log(2)*c+2*(13+12*np.log(2)*c*(12*np.log(2)*c-5))**(1/2))**(1/3)
         

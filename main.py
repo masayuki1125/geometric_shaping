@@ -85,6 +85,7 @@ class Mysystem_Polar:
     def make_BICM_int(self,N,M,type):
         
         BICM_int=np.arange(N,dtype=int)
+        
         #modify BICM int from simplified to arikan decoder order
         
         if type==1:#1:separated scheme 
@@ -386,9 +387,9 @@ elif FEC==3:
 if __name__=='__main__':
     
     K=512 #symbol数
-    M=16
+    M=256
     
-    EsNodB=8.0
+    EsNodB=100.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

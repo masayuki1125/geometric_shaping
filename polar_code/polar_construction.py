@@ -21,7 +21,7 @@ class coding():
     self.N=N
     self.K=K
     self.R=K/N
-    self.design_SNR=0
+    self.design_SNR=15
     
     #settings
     self.systematic_polar=False #default:false

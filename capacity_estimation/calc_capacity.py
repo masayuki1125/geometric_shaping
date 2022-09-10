@@ -89,11 +89,11 @@ def make_AMI(EsNodB,M):
 
 def make_BMI(EsNodB,M):
     modem_ver=0 #0:QAMModem 1:PSKModem
-    each_res=False #default:false
+    each_res=True #default:false
     
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=100000
+    count_num=1000000
         
     result=0
     
