@@ -146,18 +146,18 @@ class RCA():
         if N%int(log2(M))!=0:
             print("mapping error")
             
-        elif channel_level!=False:
-            tmp=make_BMI_list(design_SNR,M)
-            print(tmp)
-            for a in range(len(tmp)):
-                tmp[a]=self.calc_J_inv(tmp[a])
-                
-            tmp=tmp[channel_level]
+        #elif channel_level!=False:
+        #    tmp=make_BMI_list(design_SNR,M)
+        #    print(tmp)
+        #    for a in range(len(tmp)):
+        #        tmp[a]=self.calc_J_inv(tmp[a])
+        #        
+        #    tmp=tmp[channel_level]
+        #    
+        #    #print("pass the each channel level construction")
+        #    #print("channel level is",channel_level)
             
-            #print("pass the each channel level construction")
-            #print("channel level is",channel_level)
-            
-            gamma=tmp*np.ones(N)
+        #    gamma=tmp*np.ones(N)
         
         if M==2:
             #print("BPSK")
@@ -190,8 +190,8 @@ class RCA():
         
         if BICM==True:
             xi=xi[BICM_deint]
-            
-            #np.savetxt("xi",xi)
+            #print(xi)
+            #np.savetxt("a",xi)
             #from IPython.core.debugger import Pdb; Pdb().set_trace()
         
         #check if xi array is length N

@@ -31,7 +31,7 @@ class Mysystem:
         self.N=self.K*2
         const_var=3 #1:MC 2:iGA 3:RCA
         
-        self.type=7#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=1#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         
         #for construction
         if const_var==1:

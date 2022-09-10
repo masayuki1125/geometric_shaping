@@ -92,44 +92,63 @@ def adaptive_BICM(N,EsNodB,const):
     #BICM_int=BICM_int[bit_reversal_sequence]
 
     return BICM_int,BICM_deint
-
-def make_BICM_int(N,M,type,EsNodB=False,const=False):
         
-        BICM_int=np.arange(N,dtype=int)
-        #modify BICM int from simplified to arikan decoder order
+def make_BICM_int(N,M,type,EsNodB=False,const=False):
+    #print("pass")
+    #print(type)
+            
+    BICM_int=np.arange(N,dtype=int)
+    #modify BICM int from simplified to arikan decoder order
+    
+    if type==1:#1:separated scheme 
+        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        BICM_int=np.ravel(BICM_int,order='F')
+    elif type==2:#2:No intlv
+        pass
+        #BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        #BICM_int[0]=np.sort(BICM_int[0])
+        #BICM_int[1]=np.sort(BICM_int[1])
+        #BICM_int=np.ravel(BICM_int,order='C')
+        #print(BICM_int)
+        
+    elif type==3:#3:Block intlv
+        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        BICM_int=np.ravel(BICM_int,order='F')
+        #print(BICM_int)
+    elif type==4:#4:rand intlv
+        #bit reversal order
         bit_reversal_sequence=reverse_bits(N)
         BICM_int=BICM_int[bit_reversal_sequence]
         
-        if type==1:#1:separated scheme 
-            #print("err type1")
-            pass #specific file is needed
-        elif type==2:#2:No intlv in arikan polar decoder
-            pass
-        elif type==3:#3:Block intlv in arikan polar decoder
-            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-            BICM_int=np.ravel(BICM_int,order='F')
-        elif type==4:#4:rand intlv
-            tmp,_=make_BICM(N)
-            BICM_int=BICM_int[tmp]
-        elif type==5:#2:No intlv +rand intlv for each channel
-            tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
-            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-            for i in range (int(np.log2(M**(1/2)))):
-                BICM_int[i]=BICM_int[i][tmp]
-            BICM_int=np.ravel(BICM_int,order='C')
-        elif type==6:#凍結ビットを低SNRに設定する
-            BICM_int,_=adaptive_BICM(N,EsNodB,const)
-            pass#specific file is needed
-        elif type==7:#compound polar codes
-            print("err type7")
-            pass #specific file is needed
-        else:
-            print("interleaver type error")
-        BICM_deint=np.argsort(BICM_int)
-        #np.savetxt("deint",BICM_deint,fmt='%.0f')
-        #print(BICM_int)
-        #print(BICM_deint) 
-        return BICM_int,BICM_deint
+        tmp,_=make_BICM(N)
+        BICM_int=BICM_int[tmp]
+    elif type==5:#2:Block intlv +rand intlv for each channel
+        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
+        BICM_deint=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        for i in range (int(np.log2(M**(1/2)))):
+            BICM_int[i]=BICM_int[i][tmp]
+        BICM_int=np.ravel(BICM_int,order='F')
+        
+        #bit reversal order
+        
+    elif type==6:#凍結ビットを低SNRに設定する
+        adaptive_intlv=True
+        pass#specific file is needed
+    elif type==7:#compound polar codes
+        #use block interleaver
+        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+        BICM_int=np.ravel(BICM_int,order='F')
+        print("err type7")
+        pass #specific file is needed
+        
+    else:
+        print("interleaver type error")
+    BICM_deint=np.argsort(BICM_int)
+    #np.savetxt("deint",BICM_deint,fmt='%.0f')
+    #print(BICM_int)
+    #print(BICM_deint) 
+    return BICM_int,BICM_deint
 
 
 # In[4]:
@@ -471,9 +490,9 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 
 N=1024
 K=N//2
-M_list=[256]#,2**2**6]
-type_list=[1,2,3,4,5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
-const_ver_list=[1,2,3]#1:RCA 2:IGA 3:MC
+M_list=[16,256]#,2**2**6]
+type_list=[5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+const_ver_list=[1]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
     for M in M_list:
