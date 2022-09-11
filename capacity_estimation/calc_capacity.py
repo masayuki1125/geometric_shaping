@@ -40,7 +40,8 @@ def add_AWGN_GPU(constellation,No):
 
 
 def make_AMI(EsNodB,M):
-    modem_ver=1 #0:QAMModem 1:PSKModem
+    print("pass")
+    modem_ver=0 #0:QAMModem 1:PSKModem
     
   
     EsNo = 10 ** (EsNodB / 10)

@@ -36,8 +36,8 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        const_var=3#1:MC 2:iGA 3:RCA 4:GA
-        self.type=2#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        const_var=2#1:MC 2:iGA 3:RCA 4:GA
+        self.type=6#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         self.adaptive_intlv=False #default:false
         
         #for construction
@@ -79,30 +79,30 @@ class Mysystem_Polar:
         #        if np.any(i==self.BICM_int)==False:
         #            print("BICM_error")
         
-        designSNR=15.0
+        #designSNR=15.0
         
-        if self.cd.decoder_ver==2:
+        #if self.cd.decoder_ver==2:
             
             #print("pass")
-            CRC_len=len(self.cd.CRC_polynomial)-1  
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,designSNR,self.M,BICM_int=self.BICM_int,type=self.type)
-        else:
+        #    CRC_len=len(self.cd.CRC_polynomial)-1  
+        #    frozen_bits,info_bits=self.const.main_const(self.N,self.K+CRC_len,designSNR,self.M,BICM_int=self.BICM_int,type=self.type)
+        #else:
 
             #print('pass2')
-            frozen_bits,info_bits=self.const.main_const(self.N,self.K,designSNR,self.M,BICM_int=self.BICM_int,type=self.type)
+        #    frozen_bits,info_bits=self.const.main_const(self.N,self.K,designSNR,self.M,BICM_int=self.BICM_int,type=self.type)
             
         #check
-        for i in range(self.N):
-            if (np.any(i==frozen_bits) or np.any(i==info_bits))==False:
-                raise ValueError("The frozen set or info set is overlapped")
+        #for i in range(self.N):
+        #    if (np.any(i==frozen_bits) or np.any(i==info_bits))==False:
+        #        raise ValueError("The frozen set or info set is overlapped")
                 
-        self.cd.design_SNR=designSNR    
-        self.cd.frozen_bits=frozen_bits
-        self.ec.frozen_bits=frozen_bits
-        self.dc.frozen_bits=frozen_bits
-        self.cd.info_bits=info_bits
-        self.ec.info_bits=info_bits
-        self.dc.info_bits=info_bits
+        #self.cd.design_SNR=designSNR    
+        #self.cd.frozen_bits=frozen_bits
+        #self.ec.frozen_bits=frozen_bits
+        #self.dc.frozen_bits=frozen_bits
+        #self.cd.info_bits=info_bits
+        #self.ec.info_bits=info_bits
+        #self.dc.info_bits=info_bits
         #for iGA and RCA and monte_carlo construction
         
         
@@ -122,7 +122,7 @@ class Mysystem_Polar:
             filename+="_CA_SCL"
                     
         #provisional
-        filename+="_type{}_Bit_interleave".format(self.type)
+        filename+="_type{}".format(self.type)
         
         #output filename to confirm which program I run
         print(filename)
@@ -154,18 +154,21 @@ class Mysystem_Polar:
         elif type==5:#2:Block intlv(No intlv in arikan polar decoder) 
             tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
             random.shuffle(tmp)
-            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='F')
             for i in range (int(np.log2(M**(1/2)))):
+                
                 print(i)
                 BICM_int[i]=BICM_int[i][tmp]
-            BICM_deint=np.ravel(BICM_int,order='C')
+            BICM_int=np.ravel(BICM_int,order='F')
+            np.savetxt("BICM_int",BICM_int%4,'%.0f')
+            print(BICM_int)
         elif type==6:
-            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='F')
             for i in range (int(np.log2(M**(1/2)))):
                 tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
                 random.shuffle(tmp)
                 BICM_int[i]=BICM_int[i][tmp]
-            BICM_int=np.ravel(BICM_int,order='C')
+            BICM_int=np.ravel(BICM_int,order='F')
             
         else:
             print("interleaver type error")
@@ -174,7 +177,7 @@ class Mysystem_Polar:
             
         BICM_deint=np.argsort(BICM_int)
         
-        #np.savetxt("deint",BICM_deint,fmt='%.0f')
+        np.savetxt("deint",BICM_deint%4,fmt='%.0f')
         
         #print(BICM_int)
         #print(BICM_deint)

@@ -422,7 +422,7 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
                 gamma=np.sort(const.main_const_sep(N,K,SNR,M,BICM_int=BICM_int,soft_output=True))[::-1]
             else:
                 gamma=np.sort(const.main_const(N,K,SNR,M,BICM_int=BICM_int,soft_output=True))[::-1]
-            
+            #print(gamma)
             #change gamma to SNR
             if const_ver==1:
                 EsNo_list=np.exp(gamma)
@@ -430,7 +430,9 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
                 EsNo_list=gamma/4
                 
             EsNo_list=EsNo_list[:K]
-            
+            #np.savetxt("gamma",EsNo_list)
+            #from IPython.core.debugger import Pdb; Pdb().set_trace()
+
             if len(EsNo_list)!=K:
                 print("len err")
             
@@ -491,7 +493,7 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 
 N=1024
 K=N//2
-M_list=[16,256]#,2**2**6]
+M_list=[16]#,2**2**6]
 type_list=[3]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
 const_ver_list=[1]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL

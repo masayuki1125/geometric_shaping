@@ -15,9 +15,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname('__file__'), '..'))
 from capacity_estimation.calc_capacity import make_BMI_list 
-
 # In[60]:
-
 
 class RCA():
     @staticmethod
@@ -173,11 +171,14 @@ class RCA():
             #print("multi QAM")
             tmp=make_BMI_list(design_SNR,M)
             #print(tmp)
+            #print(tmp)
+            #from IPython.core.debugger import Pdb; Pdb().set_trace()
+            #print(design_SNR,tmp)
             for a in range(len(tmp)):
                 tmp[a]=self.calc_J_inv(tmp[a])
             #print(tmp)
             gamma=np.tile(tmp,N//int(log2(M)))
-            
+            np.savetxt("gamma",gamma)
             
             
             #tmp=np.zeros(len(gamma))
@@ -290,7 +291,8 @@ class RCA():
             #print(tmp)
             for a in range(len(tmp)):
                 tmp[a]=self.calc_J_inv(tmp[a])
-            #print(tmp)
+            print(tmp)
+            from IPython.core.debugger import Pdb; Pdb().set_trace()
             gamma=np.tile(tmp,N//int(log2(M)))
           
             #tmp=np.zeros(len(gamma))
@@ -335,6 +337,7 @@ class RCA():
                     xi[k * J + j + int(J/2)] = max( xi0, xi1 ) + b
         
         if soft_output:
+            print(xi)
             return xi
         '''
         tmp=np.zeros((n+1,N))
@@ -504,6 +507,7 @@ class RCA():
             
             if I>1 or I<0:
                 print("I is err")
+                print(I)
                     
             #print("use new funcß")   
             C1=0.055523

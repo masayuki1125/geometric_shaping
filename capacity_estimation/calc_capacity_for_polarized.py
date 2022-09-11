@@ -40,12 +40,12 @@ def add_AWGN_GPU(constellation,No):
 
 
 def make_AMI(EsNodB,M):
-    modem_ver=1 #0:QAMModem 1:PSKModem
+    modem_ver=0 #0:QAMModem 1:PSKModem
     
   
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=1000000
+    count_num=10000000
 
     #make info matrices
     info=cp.random.randint(0,M,count_num)
@@ -93,7 +93,7 @@ def make_BMI(EsNodB,M):
     
     EsNo = 10 ** (EsNodB / 10)
     No=1/EsNo
-    count_num=1000000
+    count_num=10000
         
     result=0
     
@@ -166,8 +166,14 @@ def make_BMI(EsNodB,M):
             #print(mat_ones_zeros_i.shape) #(count_num,2,M/2)
             #print(mat_ones_zeros_i[0])
             
+            
             res_ones_zeros_i=cp.take_along_axis(mat_ones_zeros_i,ith_bits[:,None,None],axis=1)[:,0,:].T
+            
+            #if i==1:
+               #res_ones_zeros_i 
             #print(res_ones_zeros_i.shape) #(count_num,1,M/2)
+            #print(res_ones_zeros_i)
+            #from IPython.core.debugger import Pdb; Pdb().set_trace()
             #print(res_ones_zeros_i)
             #print(res_ones_zeros_i)
             #del mat_ones_zeros_i
@@ -205,9 +211,9 @@ def make_BMI_list(EsNodB,M):
     # directory make
     current_directory="/home/kaneko/Dropbox/programming/geometric_shaping/capacity_estimation"
     #current_directory=os.getcwd()
-    dir_name="BMI_afterpolarization"
+    dir_name="BMI_polar"
     dir_name=current_directory+"/"+dir_name
-    
+    #print("pass")
     try:
       os.makedirs(dir_name)
     except FileExistsError:
@@ -233,7 +239,7 @@ def make_BMI_list(EsNodB,M):
 if __name__=='__main__':
     
     SNR_range=np.arange(0,20,0.5)
-    M_list=[4096]
+    M_list=[16]
     
     '''
     BMI_list=np.zeros(len(SNR_range))
