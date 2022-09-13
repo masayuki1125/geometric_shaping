@@ -332,7 +332,7 @@ class monte_carlo():
       c=c+res[i]
       
     #normarize
-    
+    c/=multi_num
       
     return c
   
@@ -543,7 +543,7 @@ if __name__=="__main__":
     
     
 
-    K=256
+    K=512
     N=2*K
     type=5
     

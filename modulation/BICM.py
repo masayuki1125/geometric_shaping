@@ -123,7 +123,7 @@ def make_BICM_multi(N,output_num):#複数のインターリーブした系列を
     res_int=[]
     res_deint=[]
     for i in range(output_num):
-        filename="length{}_mod{}_num{}".format(N,M,i)
+        filename="length{}_mod{}_num{}".format(N,int((M)**(1/2)//2),i)
 
         #if file exists, then load txt file
         filename=dir_name+"/"+filename
