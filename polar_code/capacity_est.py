@@ -383,12 +383,7 @@ def calc_SCL_BLER(gamma,decoder_ver):
         print("error")
     
     return Pe 
-
-
 # In[9]:
-
-
-
 def calc_BLER(N,K,M,type,const_ver,decoder_ver):
     print(N,K,M,type,const_ver,decoder_ver)
     
@@ -475,10 +470,8 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
             #print(EsNodB[i])
             print(str(EsNodB_range[i]),str(BLER[i]),file=f)
 
-
 # In[10]:
 '''
-
 N=1024*16
 K=N//2
 M=256
@@ -487,14 +480,11 @@ const_ver=1
 decoder_ver=2
 calc_BLER(N,K,M,type,const_ver,decoder_ver)
 '''
-
 # In[11]:
-
-
 N=1024
 K=N//2
 M_list=[16]#,2**2**6]
-type_list=[3]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+type_list=[6]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
 const_ver_list=[1]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
@@ -502,4 +492,3 @@ for decoder_ver in decoder_ver_list:
         for type in type_list:
             for const_ver in const_ver_list:
                 calc_BLER(N,K,M,type,const_ver,decoder_ver)
-

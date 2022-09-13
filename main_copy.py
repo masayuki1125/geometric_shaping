@@ -20,6 +20,7 @@ from turbo_code import turbo_encode
 from turbo_code import turbo_decode
 from modulation import modulation
 from modulation.BICM import make_BICM
+from modulation.BICM import make_BICM_multi
 from modulation.BICM import BICM_ID
 from channel import AWGN
 import random
@@ -36,8 +37,8 @@ class Mysystem_Polar:
         self.K=K
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
-        const_var=2#1:MC 2:iGA 3:RCA 4:GA
-        self.type=6#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        const_var=3#1:MC 2:iGA 3:RCA 4:GA
+        self.type=5#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         self.adaptive_intlv=False #default:false
         
         #for construction
@@ -152,22 +153,32 @@ class Mysystem_Polar:
             tmp,_=make_BICM(N)
             BICM_int=BICM_int[tmp]
         elif type==5:#2:Block intlv(No intlv in arikan polar decoder) 
-            tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
-            random.shuffle(tmp)
+            #tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
+            #tmp,_=make_BICM_multi(N//int(np.log2(M**(1/2))),4,)
+            #BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='F')
+            #for i in range (int(np.log2(M**(1/2)))):
+            #    BICM_int[i]=BICM_int[i][tmp[i]]
+            #BICM_int=np.ravel(BICM_int,order='F')
+            #np.savetxt("BICM_int",BICM_int%4,'%.0f')
+            #print(BICM_int)
+            
+            #modify BICM int from simplified to arikan decoder order
+            tmp,_=make_BICM_multi(N//int(np.log2(M**(1/2))),int(np.log2(M**(1/2))))
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='F')
             for i in range (int(np.log2(M**(1/2)))):
-                
-                print(i)
-                BICM_int[i]=BICM_int[i][tmp]
+                BICM_int[i]=BICM_int[i][tmp[i]]
             BICM_int=np.ravel(BICM_int,order='F')
-            np.savetxt("BICM_int",BICM_int%4,'%.0f')
-            print(BICM_int)
+            
         elif type==6:
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='F')
+            
+            tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
+            
             for i in range (int(np.log2(M**(1/2)))):
-                tmp=np.arange(N//int(np.log2(M**(1/2))),dtype=int)
+                
                 random.shuffle(tmp)
                 BICM_int[i]=BICM_int[i][tmp]
+                #BICM_int[i]=np.roll(BICM_int[i],i)
             BICM_int=np.ravel(BICM_int,order='F')
             
         else:
@@ -426,7 +437,7 @@ if __name__=='__main__':
     K=512 #symbol数
     M=256
     
-    EsNodB=17.0
+    EsNodB=15.0
     print("EsNodB",EsNodB)
     system=Mysystem(M,K)
     print("\n")

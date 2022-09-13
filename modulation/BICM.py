@@ -104,6 +104,51 @@ def make_BICM(N,M=4):
     
     return BICM_int,BICM_deint
 
+def make_BICM_multi(N,output_num):#複数のインターリーブした系列を出力する
+    M=4
+    #make BICM directory
+    # directory make
+    home=os.environ['HOME']
+    current_directory=home+"/Dropbox/programming/geometric_shaping/modulation"
+    #current_directory=os.getcwd()
+    dir_name="BICM_interleaver"
+    dir_name=current_directory+"/"+dir_name
+    
+    try:
+        os.makedirs(dir_name)
+    except FileExistsError:
+        pass
+    
+    #複数出力する
+    res_int=[]
+    res_deint=[]
+    for i in range(output_num):
+        filename="length{}_mod{}_num{}".format(N,M,i)
+
+        #if file exists, then load txt file
+        filename=dir_name+"/"+filename
+        
+        try:
+            BICM_int=np.loadtxt(filename,dtype='int')
+        except FileNotFoundError:
+            BICM_int=srandom_interleave(N,M)
+            #export file
+            np.savetxt(filename,BICM_int,fmt='%d')
+        
+        BICM_deint=np.argsort(BICM_int)
+        
+        #check
+        a=np.arange(N)
+        b=a[BICM_int]
+        c=b[BICM_deint]
+        if np.any(a!=c):
+            print("BICM interleaver error!")
+            
+        res_int=res_int+[BICM_int]
+        res_deint=res_deint+[BICM_deint]
+    
+    return res_int,res_deint
+
 class BICM_ID:
     def __init__(self,modem,zeros=0,ones=0):
         self.modem=modem
