@@ -273,7 +273,7 @@ class monte_carlo():
     
     c=self.output(dumped)
     
-    tmp=np.argsort(c)[::-1]
+    tmp=np.argsort(c)#[::-1]
     frozen_bits=np.sort(tmp[:N-K])
     info_bits=np.sort(tmp[N-K:])
     

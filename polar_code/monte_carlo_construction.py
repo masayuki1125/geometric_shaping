@@ -14,6 +14,7 @@ import os
 
 sys.path.append(os.path.abspath(".."))
 from modulation.BICM import make_BICM
+from modulation.BICM import make_BICM_multi
 from modulation.modulation import QAMModem
 from modulation.modulation import PSKModem
 
@@ -286,7 +287,7 @@ class monte_carlo():
     #initial constant
     const=pickle.loads(dumped)
     
-    epoch=10**6//multiprocessing.cpu_count()
+    epoch=10**7//multiprocessing.cpu_count()
     #print(multiprocessing.cpu_count())
     #print(epoch)
     
@@ -335,7 +336,7 @@ class monte_carlo():
     home=os.environ['HOME']
     current_directory=home+"/Dropbox/programming/geometric_shaping/polar_code"
     #current_directory=os.getcwd()
-    dir_name="monte_carlo_construction"
+    dir_name="monte_carlo_construction_extra"
     dir_name=current_directory+"/"+dir_name
     
     try:
@@ -411,13 +412,23 @@ if __name__=="__main__":
             BICM_int=BICM_int[tmp]
         elif type==5:#2:No intlv +rand intlv for each channel
             #modify BICM int from simplified to arikan decoder order
+            #bit_reversal_sequence=reverse_bits(N)
+            #BICM_int=BICM_int[bit_reversal_sequence]
+            #tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
+            #BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            #for i in range (int(np.log2(M**(1/2)))):
+            #    BICM_int[i]=BICM_int[i][tmp]
+            #BICM_int=np.ravel(BICM_int,order='C')
+            #modify BICM int from simplified to arikan decoder order
             bit_reversal_sequence=reverse_bits(N)
             BICM_int=BICM_int[bit_reversal_sequence]
-            tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
-            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+            tmp,_=make_BICM_multi(N//int(np.log2(M**(1/2))),int(np.log2(M**(1/2))))
+            BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='F')
             for i in range (int(np.log2(M**(1/2)))):
-                BICM_int[i]=BICM_int[i][tmp]
-            BICM_int=np.ravel(BICM_int,order='C')
+                BICM_int[i]=BICM_int[i][tmp[i]]
+            BICM_int=np.ravel(BICM_int,order='F')
+            
+            
         elif type==6:#凍結ビットを低SNRに設定する
             BICM_int,_=adaptive_BICM(N,EsNodB,const)
             pass#specific file is needed
@@ -536,21 +547,56 @@ if __name__=="__main__":
     
     
 
-    K=256
+    K=512
     N=2*K
-    type=3
+    #type=5
     
-    M_list=[16,256]
-    EsNodB_list=np.arange(4,10,0.5)
-    for M in M_list:
+    #M_list=[16,256]
+    #EsNodB_list=np.arange(4,10,0.5)
+    #for M in M_list:
+        #インターリーバ設計
+    #    BICM_int,_=make_BICM_int(N,M,type)
+        
+    #    for EsNodB in EsNodB_list:  
+    #        if M==16:
+    #            EsNodB+=0
+    #        elif M==256:
+    #            EsNodB+=10 
+    #        const=monte_carlo()
+    #        const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
+
+
+    type_list=[2,3,5]
+    M=16
+    EsNodB_list=np.arange(9,10,0.5)
+    for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)
         
         for EsNodB in EsNodB_list:  
-            if M==16:
-                EsNodB+=0
-            elif M==256:
-                EsNodB+=10 
             const=monte_carlo()
             const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
+    
+    type_list=[3,5]
+    M=256
+    EsNodB_list=np.arange(18.5,19.5,0.5)
+    for type in type_list:
+        #インターリーバ設計
+        BICM_int,_=make_BICM_int(N,M,type)
+        
+        for EsNodB in EsNodB_list:  
+            const=monte_carlo()
+            const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
+            
+    type_list=[2]
+    M=256
+    EsNodB_list=np.arange(18.5,20,0.5)
+    for type in type_list:
+        #インターリーバ設計
+        BICM_int,_=make_BICM_int(N,M,type)
+        
+        for EsNodB in EsNodB_list:  
+            const=monte_carlo()
+            const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
+
     

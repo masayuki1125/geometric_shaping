@@ -13,6 +13,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname('__file__'), '..'))
 from capacity_estimation.calc_capacity import make_BMI_list 
 from modulation.BICM import make_BICM
+from modulation.BICM import make_BICM_multi
 import random
 
 
@@ -122,12 +123,14 @@ def make_BICM_int(N,M,type,EsNodB=False,const=False):
         
         tmp,_=make_BICM(N)
         BICM_int=BICM_int[tmp]
-    elif type==5:#2:Block intlv +rand intlv for each channel
-        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
-        tmp,_=make_BICM(N//int(np.log2(M**(1/2))))
-        BICM_deint=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
+    elif type==5:#2:No intlv +rand intlv for each channel
+            #modify BICM int from simplified to arikan decoder order
+        bit_reversal_sequence=reverse_bits(N)
+        BICM_int=BICM_int[bit_reversal_sequence]
+        tmp,_=make_BICM_multi(N//int(np.log2(M**(1/2))),int(np.log2(M**(1/2))))
+        BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='F')
         for i in range (int(np.log2(M**(1/2)))):
-            BICM_int[i]=BICM_int[i][tmp]
+            BICM_int[i]=BICM_int[i][tmp[i]]
         BICM_int=np.ravel(BICM_int,order='F')
         
         #bit reversal order
@@ -191,7 +194,7 @@ def calc_BLER_monte_carlo(N,K,M,type,design_SNR):
     #calc BLER
     #gaussian approximation
     
-    EsNo_list=np.sort(c)/4
+    EsNo_list=np.sort(c)[::-1]/4
     EsNo_list=EsNo_list[:K]
     #np.savetxt("gamma",EsNo_list)
     #from IPython.core.debugger import Pdb; Pdb().set_trace()
@@ -490,11 +493,12 @@ decoder_ver=2
 calc_BLER(N,K,M,type,const_ver,decoder_ver)
 '''
 # In[11]:
-N=512
+#print("pass")
+N=1024
 K=N//2
-M_list=[16]#,2**2**6]
-type_list=[6]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
-const_ver_list=[1,3]#1:RCA 2:IGA 3:MC
+M_list=[16,256]#,2**2**6]
+type_list=[5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+const_ver_list=[3]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
     for M in M_list:
