@@ -38,7 +38,7 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         const_var=2#1:MC 2:iGA 3:RCA 4:GA
-        self.type=3#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=5#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         self.adaptive_intlv=False #default:false
         
         #for construction
@@ -454,6 +454,7 @@ if __name__=='__main__':
             count_err+=1
     print("result")
     print(count_err/count_all)
+    
     
     '''
     K=512
