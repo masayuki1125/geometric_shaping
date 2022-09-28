@@ -463,6 +463,10 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
         print("something wrong with decoder_ver") 
         
     filename=filename+str(N)+"_"+str(K)+"_"+str(M)+"_type"+str(type)
+    
+    #print(filename)
+    #print(EsNodB_range)
+    #print(BLER)
     with open(filename,'w') as f:
         print("#EsNodB,BLER,BER",file=f)
         
@@ -483,8 +487,8 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 # In[11]:
 N=1024
 K=N//2
-M_list=[16,256]#,2**2**6]
-type_list=[2,3,5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+M_list=[256]#,2**2**6]
+type_list=[5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
 const_ver_list=[3]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:
