@@ -101,7 +101,13 @@ class Myconstruction:
     #polar decode
     @staticmethod
     def chk(llr_1,llr_2):
-        CHECK_NODE_TANH_THRES=30
+        
+        def max_str(a,b):
+            res=max(a,b)
+            res+=np.log(1+np.exp(-1*abs(a-b)))
+            return res
+        
+        CHECK_NODE_TANH_THRES=37
         res=np.zeros(len(llr_1))
         for i in range(len(res)):
 
@@ -112,6 +118,10 @@ class Myconstruction:
                 else:
                     # Otherwise, we return an opposite to the minimum of their absolute values.
                     res[i]=-1 * min(abs(llr_1[i]), abs(llr_2[i]))
+                #tmp=np.log(np.exp(-1*res)+np.exp(llr_1+llr_2-res))-np.log(np.exp(llr_1)+np.exp(llr_2))
+                res[i]=res[i]+max_str(-1*res[i],llr_1[i]+llr_2[i]-res[i])-max_str(llr_1[i],llr_2[i])
+                
+            
             else:
                 res[i]= 2 * np.arctanh(np.tanh(llr_1[i] / 2, ) * np.tanh(llr_2[i] / 2))
         return res
@@ -548,19 +558,20 @@ if __name__=="__main__":
 
     K=512
     N=2*K
-    type=3
     
+    type_list=[3,4,5]
     M_list=[16,256]
     EsNodB_list=np.arange(4,10,0.5)
-    for M in M_list:
-        #インターリーバ設計
-        BICM_int,_=make_BICM_int(N,M,type)
-        
-        for EsNodB in EsNodB_list:  
-            if M==16:
-                EsNodB+=0
-            elif M==256:
-                EsNodB+=10 
-            const=monte_carlo()
-            const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
+    for type in type_list:
+        for M in M_list:
+            #インターリーバ設計
+            BICM_int,_=make_BICM_int(N,M,type)
+            
+            for EsNodB in EsNodB_list:  
+                if M==16:
+                    EsNodB+=0
+                elif M==256:
+                    EsNodB+=10 
+                const=monte_carlo()
+                const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
     
