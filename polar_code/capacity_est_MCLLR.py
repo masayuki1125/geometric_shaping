@@ -496,8 +496,8 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 #print("pass")
 N=1024
 K=N//2
-M_list=[256]#,2**2**6]
-type_list=[5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+M_list=[16]#,2**2**6]
+type_list=[3]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
 const_ver_list=[3]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:

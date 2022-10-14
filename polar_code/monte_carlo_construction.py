@@ -287,7 +287,7 @@ class monte_carlo():
     #initial constant
     const=pickle.loads(dumped)
     
-    epoch=10**7//multiprocessing.cpu_count()
+    epoch=10**8//multiprocessing.cpu_count()
     #print(multiprocessing.cpu_count())
     #print(epoch)
     
@@ -337,7 +337,7 @@ class monte_carlo():
     current_directory=home+"/Dropbox/programming/geometric_shaping/polar_code"
     #current_directory=os.getcwd()
     #dir_name="monte_carlo_construction_extra"
-    dir_name="monte_carlo_construction_extra"
+    dir_name="monte_carlo_construction_extra_ex"
     dir_name=current_directory+"/"+dir_name
     
     try:
@@ -585,7 +585,7 @@ if __name__=="__main__":
             
     type_list=[4]
     M=16
-    EsNodB_list=np.arange(9,10,0.5)
+    EsNodB_list=np.arange(9.5,10,0.5)
     for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)
@@ -596,7 +596,7 @@ if __name__=="__main__":
 
     type_list=[4]
     M=256
-    EsNodB_list=np.arange(18.5,19.5,0.5)
+    EsNodB_list=np.arange(19,19.5,0.5)
     for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)
@@ -607,7 +607,7 @@ if __name__=="__main__":
             
     type_list=[5]
     M=16
-    EsNodB_list=np.arange(8,10,0.5)
+    EsNodB_list=np.arange(9.5,10,0.5)
     for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)
@@ -618,7 +618,7 @@ if __name__=="__main__":
 
     type_list=[5]
     M=256
-    EsNodB_list=np.arange(17.5,19.5,0.5)
+    EsNodB_list=np.arange(19,19.5,0.5)
     for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)

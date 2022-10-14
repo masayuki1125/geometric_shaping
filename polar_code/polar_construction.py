@@ -34,7 +34,7 @@ class coding():
       
     self.const=iGA.Improved_GA()#monte_carlo() #Improved_GA()
       
-      #flozen_bit selection 
+    #flozen_bit selection 
     if self.decoder_ver==2:
       CRC_len=len(self.CRC_polynomial)-1
       self.frozen_bits,self.info_bits=self.const.main_const(self.N,self.K+CRC_len,self.design_SNR)

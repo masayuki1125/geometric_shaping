@@ -160,7 +160,7 @@ def calc_BLER_monte_carlo(N,K,M,type,design_SNR):
     home=os.environ['HOME']
     current_directory=home+"/Dropbox/programming/geometric_shaping/polar_code"
     #current_directory=os.getcwd()
-    dir_name="monte_carlo_construction"
+    dir_name="monte_carlo_construction_extra_ex"
     dir_name=current_directory+"/"+dir_name
     
     #make filename
@@ -189,7 +189,7 @@ def calc_BLER_monte_carlo(N,K,M,type,design_SNR):
         return np.nan
     
     #calc BLER
-    BER=np.sort(c/10**6)[:K]
+    BER=np.sort(c/10**8)[:K]
     BLER=1-np.prod(1-BER)
     
     return BLER
@@ -451,7 +451,7 @@ def calc_BLER(N,K,M,type,const_ver,decoder_ver):
     elif const_ver==2:
         filename="EST_IGA_"
     elif const_ver==3:
-        filename="EST_MC_"
+        filename="ex_ex_EST_MC_"
     else:
         print("something wrong with  const_ver")  
     
@@ -487,8 +487,8 @@ calc_BLER(N,K,M,type,const_ver,decoder_ver)
 # In[11]:
 N=1024
 K=N//2
-M_list=[256]#,2**2**6]
-type_list=[5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+M_list=[16,256]#,2**2**6]
+type_list=[3,4,5]#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
 const_ver_list=[3]#1:RCA 2:IGA 3:MC
 decoder_ver_list=[1] #1:SC 2:CA_SCL
 for decoder_ver in decoder_ver_list:

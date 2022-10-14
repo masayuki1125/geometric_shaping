@@ -39,12 +39,12 @@ class Mysystem_Polar:
         #self.N=self.K*int(np.log2(self.M))
         self.N=self.K*2
         const_var=1#1:MC 2:iGA 3:RCA 4:GA
-        self.type=3#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
+        self.type=4#1:separated scheme 2:Block intlv(No intlv in arikan polar decoder) 3:No intlv(Block intlv in arikan polar decoder) 4:rand intlv
         self.adaptive_intlv=False #default:false
         
         #for construction
         if const_var==1:
-            self.const=monte_carlo_construction_LLR.monte_carlo() #LLRに変更
+            self.const=monte_carlo_construction.monte_carlo() #LLRに変更
             self.const_name="_MC"
         elif const_var==2:
             self.const=iGA.Improved_GA()
@@ -184,8 +184,6 @@ class Mysystem_Polar:
             
         else:
             print("interleaver type error")
-            
-        
             
         BICM_deint=np.argsort(BICM_int)
         

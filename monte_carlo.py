@@ -6,9 +6,9 @@ from main_copy import Mysystem
 import itertools
 import multiprocessing
 
-#a=multiprocessing.cpu_count()
-#ray.init(num_cpus=a//5)
-ray.init()
+a=multiprocessing.cpu_count()
+ray.init(num_cpus=a//4)
+#ray.init()
 
 @ray.remote
 def output(dumped,EbNodB):
@@ -57,8 +57,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=4
-        self.EbNodB_end=10
+        self.EbNodB_start=19
+        self.EbNodB_end=19.5
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
@@ -136,9 +136,7 @@ class MC():
             #特定のNについて終わったら出力
             st=savetxt(M,self.K)
             st.savetxt(BLER,BER)
-# In[ ]:
-
-
+            
 #毎回書き換える関数
 class savetxt():
   
@@ -178,7 +176,7 @@ if __name__=="__main__":
     K=512
     print("K=",K)
     mc=MC(K)
-    M_list=[16]
+    M_list=[256]
     result_ids_array=[]
     
     
