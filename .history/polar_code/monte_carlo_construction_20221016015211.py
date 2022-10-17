@@ -563,7 +563,7 @@ if __name__=="__main__":
 
     type_list=[2]
     M=16
-    EsNodB_list=np.arange(8,9.5,0.5)
+    EsNodB_list=np.arange(8,10,0.5)
     for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)
@@ -574,7 +574,7 @@ if __name__=="__main__":
     
     type_list=[2]
     M=256
-    EsNodB_list=np.arange(17,18.5,0.5)
+    EsNodB_list=np.arange(18.5,19.5,0.5)
     for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)

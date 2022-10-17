@@ -287,7 +287,7 @@ class monte_carlo():
     #initial constant
     const=pickle.loads(dumped)
     
-    epoch=10**8//multiprocessing.cpu_count()
+    epoch=10**8//(multiprocessing.cpu_count()
     #print(multiprocessing.cpu_count())
     #print(epoch)
     
