@@ -57,8 +57,8 @@ class MC():
         self.TX_antenna=1
         self.RX_antenna=1
         self.MAX_ERR=100
-        self.EbNodB_start=19
-        self.EbNodB_end=19.5
+        self.EbNodB_start=14
+        self.EbNodB_end=20
         self.EbNodB_range=np.arange(self.EbNodB_start,self.EbNodB_end,0.5) #0.5dBごとに測定
 
     #特定のNに関する出力
