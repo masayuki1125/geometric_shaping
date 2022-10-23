@@ -396,7 +396,8 @@ if __name__=="__main__":
             BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             BICM_int=np.ravel(BICM_int,order='F')
         elif type==2:#2:Block intlv in arikan polar decoder
-            
+            bit_reversal_sequence=reverse_bits(N)
+            BICM_int=BICM_int[bit_reversal_sequence]
             pass
             #BICM_int=np.reshape(BICM_int,[int(np.log2(M**(1/2))),-1],order='C')
             #BICM_int[0]=np.sort(BICM_int[0])
@@ -561,20 +562,20 @@ if __name__=="__main__":
     #        const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
 
 
-    type_list=[2]
-    M=16
-    EsNodB_list=np.arange(8,9.5,0.5)
-    for type in type_list:
+    #type_list=[2]
+    #M=16
+    #EsNodB_list=np.arange(8.5,9.5,0.5)
+    #for type in type_list:
         #インターリーバ設計
-        BICM_int,_=make_BICM_int(N,M,type)
+    #    BICM_int,_=make_BICM_int(N,M,type)
         
-        for EsNodB in EsNodB_list:  
-            const=monte_carlo()
-            const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
+    #    for EsNodB in EsNodB_list:  
+    #        const=monte_carlo()
+    #        const.main_const(N,K,EsNodB,M,BICM_int=BICM_int,type=type)   
     
     type_list=[2]
     M=256
-    EsNodB_list=np.arange(17,18.5,0.5)
+    EsNodB_list=np.arange(17.5,18,0.5)
     for type in type_list:
         #インターリーバ設計
         BICM_int,_=make_BICM_int(N,M,type)
